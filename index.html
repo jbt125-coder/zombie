@@ -3,20 +3,45 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Zombie Horde Shooter</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #1a0a2e; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; font-family: 'Arial Black', sans-serif; }
-  #gameCanvas { border: 3px solid #ff6b35; border-radius: 8px; box-shadow: 0 0 30px #ff6b3566, 0 0 60px #ff6b3522; cursor: none; display: block; }
-  #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 20; }
-  #startScreen, #gameOverScreen { background: rgba(10,5,20,0.93); border: 3px solid #ff6b35; border-radius: 16px; padding: 36px 44px; text-align: center; color: white; max-width: 440px; }
-  h1 { color: #ff6b35; font-size: 2em; text-shadow: 0 0 20px #ff6b35; margin-bottom: 8px; }
-  h2 { color: #ff4444; font-size: 1.7em; margin-bottom: 8px; }
-  .subtitle { color: #aaa; font-size: 0.82em; margin-bottom: 16px; line-height: 1.6; }
-  .btn { background: #ff6b35; color: white; border: none; padding: 13px 38px; font-size: 1.05em; font-family: 'Arial Black', sans-serif; border-radius: 8px; cursor: pointer; margin-top: 14px; transition: all 0.2s; }
-  .btn:hover { background: #ff8c5a; transform: scale(1.05); box-shadow: 0 0 20px #ff6b35; }
-  .stat-line { color: #ffcc44; font-size: 0.95em; margin: 3px 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    background: #1a0a2e;
+    width: 100%; height: 100%;
+    overflow: hidden;
+    touch-action: none;
+    font-family: 'Arial Black', Arial, sans-serif;
+    position: fixed;
+  }
+  body { display: flex; align-items: center; justify-content: center; }
+  #gameCanvas { display: block; touch-action: none; }
+  #overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center; z-index: 20;
+  }
+  #startScreen, #gameOverScreen {
+    background: rgba(10,5,20,0.95);
+    border: 2px solid #ff6b35; border-radius: 14px;
+    padding: 24px 28px; text-align: center; color: white;
+    width: 88vw; max-width: 400px;
+  }
+  h1 { color: #ff6b35; font-size: 1.7em; text-shadow: 0 0 16px #ff6b35; margin-bottom: 6px; }
+  h2 { color: #ff4444; font-size: 1.5em; margin-bottom: 6px; }
+  .subtitle { color: #bbb; font-size: 0.78em; margin-bottom: 14px; line-height: 1.65; }
+  .btn {
+    background: #ff6b35; color: white; border: none;
+    padding: 14px 0; font-size: 1.1em;
+    font-family: 'Arial Black', Arial, sans-serif;
+    border-radius: 10px; cursor: pointer; margin-top: 12px;
+    width: 100%; display: block;
+    -webkit-appearance: none;
+  }
+  .stat-line { color: #ffcc44; font-size: 0.9em; margin: 4px 0; }
 </style>
 </head>
 <body>
@@ -25,52 +50,76 @@
   <div id="startScreen">
     <h1>☠ ZOMBIE HORDE</h1>
     <p class="subtitle">
-      🖱 Move mouse LEFT/RIGHT to steer your squad<br>
+      👆 Drag LEFT/RIGHT to steer your squad<br>
       🟢 <b style="color:#44ff88">Soldier pickups</b> drop from the top — auto-join your squad!<br>
       🔵 <b style="color:#44aaff">+10 reinforcements</b> drop after 1 minute<br>
       📦 <b style="color:#ff6600">Weapon crates</b> fall randomly — 10 second boost!<br>
       🚗 <b style="color:#ffdd44">Cars</b> drive in — shoot 50 times to detonate!<br>
       👑 Kill the <b style="color:#ffd700">King Zombie</b> to clear the round!
     </p>
-    <button class="btn" onclick="startGame()">▶ START GAME</button>
+    <button class="btn" ontouchstart="event.preventDefault();startGame()" onclick="startGame()">▶ START GAME</button>
   </div>
   <div id="gameOverScreen" style="display:none">
     <h2>💀 SQUAD WIPED</h2>
     <div id="finalStats"></div>
-    <button class="btn" onclick="startGame()">↩ TRY AGAIN</button>
+    <button class="btn" ontouchstart="event.preventDefault();startGame()" onclick="startGame()">↩ TRY AGAIN</button>
   </div>
 </div>
 <script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+
+// iOS Safari <16 roundRect polyfill
+function rr(c,x,y,w,h,r){
+r=Math.min(r,w/2,h/2);
+c.moveTo(x+r,y);
+c.lineTo(x+w-r,y); c.arcTo(x+w,y,x+w,y+r,r);
+c.lineTo(x+w,y+h-r); c.arcTo(x+w,y+h,x+w-r,y+h,r);
+c.lineTo(x+r,y+h); c.arcTo(x,y+h,x,y+h-r,r);
+c.lineTo(x,y+r); c.arcTo(x,y,x+r,y,r);
+c.closePath();
+}
+const canvas = document.getElementById(‘gameCanvas’);
+const ctx = canvas.getContext(‘2d’);
+
+let state = {};
+let mouseX = 0;
+let animFrame;
+let _starting = false;
 
 function resize() {
-canvas.width  = Math.min(window.innerWidth  - 20, 900);
-canvas.height = Math.min(window.innerHeight - 20, 600);
+canvas.width  = window.innerWidth;
+canvas.height = window.innerHeight;
+mouseX = canvas.width / 2;
+if (state && state.squadX) {
+state.squadX = canvas.width / 2;
+}
 }
 resize();
 window.addEventListener(‘resize’, resize);
+window.addEventListener(‘orientationchange’, () => setTimeout(resize, 100));
 
-let state = {};
-let mouseX = canvas.width / 2;
-let animFrame;
+// Prevent scroll/zoom on the canvas only
+canvas.addEventListener(‘touchstart’,  e => e.preventDefault(), { passive: false });
+canvas.addEventListener(‘touchmove’,   e => e.preventDefault(), { passive: false });
+canvas.addEventListener(‘touchend’,    e => e.preventDefault(), { passive: false });
+
+function getTouchX(e) {
+const r = canvas.getBoundingClientRect();
+return (e.touches[0] || e.changedTouches[0]).clientX - r.left;
+}
 
 canvas.addEventListener(‘mousemove’, e => {
 const r = canvas.getBoundingClientRect();
 mouseX = e.clientX - r.left;
 });
-canvas.addEventListener(‘touchmove’, e => {
-e.preventDefault();
-const r = canvas.getBoundingClientRect();
-mouseX = e.touches[0].clientX - r.left;
-}, { passive: false });
+canvas.addEventListener(‘touchstart’, e => { mouseX = getTouchX(e); }, { passive: false });
+canvas.addEventListener(‘touchmove’,  e => { mouseX = getTouchX(e); }, { passive: false });
 
 // ── WEAPON DEFS ────────────────────────────────────────────────────────
 const WEAPONS = {
-bullet:       { name:‘Bullet’,       color:’#ffe044’, glow:’#ffcc00’, attack:1,  dur:Infinity, rate:8,  range:Infinity, spread:true,  continuous:false },
-flamethrower: { name:‘Flamethrower’, color:’#ff6600’, glow:’#ff3300’, attack:5,  dur:600,      rate:3,  range:155,      spread:true,  continuous:false },
-laser:        { name:‘Laser’,        color:’#00ffff’, glow:’#00aaaa’, attack:20, dur:600,      rate:1,  range:Infinity, spread:false, continuous:true  },
-machinegun:   { name:‘Machine Gun’,  color:’#ff44bb’, glow:’#cc0088’, attack:10, dur:600,      rate:2,  range:Infinity, spread:true,  continuous:false },
+bullet:       { name:‘Bullet’,       color:’#ffe044’, glow:’#ffcc00’, attack:1,  dur:999999, rate:8,  range:999999, spread:true,  continuous:false },
+flamethrower: { name:‘Flamethrower’, color:’#ff6600’, glow:’#ff3300’, attack:5,  dur:600,    rate:3,  range:155,    spread:true,  continuous:false },
+laser:        { name:‘Laser’,        color:’#00ffff’, glow:’#00aaaa’, attack:20, dur:600,    rate:1,  range:999999, spread:false, continuous:true  },
+machinegun:   { name:‘Machine Gun’,  color:’#ff44bb’, glow:’#cc0088’, attack:10, dur:600,    rate:2,  range:999999, spread:true,  continuous:false },
 };
 
 // ── INIT STATE ─────────────────────────────────────────────────────────
@@ -116,7 +165,7 @@ ctx.fillStyle=‘rgba(0,0,0,0.3)’;
 ctx.beginPath(); ctx.ellipse(0,22,12,4,0,0,Math.PI*2); ctx.fill();
 const bodyCol = type===‘boss’?’#8B0000’:type===‘special’?’#6a0dad’:’#2d5a27’;
 const headCol = type===‘boss’?’#b22222’:type===‘special’?’#9b30d0’:’#5a9952’;
-ctx.fillStyle=bodyCol; ctx.beginPath(); ctx.roundRect(-9,0,18,22,4); ctx.fill();
+ctx.fillStyle=bodyCol; ctx.beginPath(); rr(ctx,-9,0,18,22,4); ctx.fill();
 ctx.fillStyle=headCol; ctx.beginPath(); ctx.ellipse(0,-8,11,12,0,0,Math.PI*2); ctx.fill();
 ctx.fillStyle=’#ff0’;
 ctx.beginPath(); ctx.ellipse(-4,-10,3,3,0,0,Math.PI*2); ctx.fill();
@@ -152,7 +201,7 @@ ctx.save();
 ctx.translate(x, y); ctx.scale(scale, scale);
 ctx.fillStyle=‘rgba(0,0,0,0.2)’;
 ctx.beginPath(); ctx.ellipse(0,20,8,3,0,0,Math.PI*2); ctx.fill();
-ctx.fillStyle=’#5c7a3e’; ctx.beginPath(); ctx.roundRect(-7,0,14,18,3); ctx.fill();
+ctx.fillStyle=’#5c7a3e’; ctx.beginPath(); rr(ctx,-7,0,14,18,3); ctx.fill();
 ctx.fillStyle=’#f4c68a’; ctx.beginPath(); ctx.ellipse(0,-7,8,9,0,0,Math.PI*2); ctx.fill();
 ctx.fillStyle=’#3d5228’;
 ctx.beginPath(); ctx.ellipse(0,-11,9,6,0,Math.PI,Math.PI*2); ctx.fill();
@@ -206,9 +255,9 @@ ctx.save(); ctx.translate(p.x, p.y);
 ctx.shadowColor=w.glow; ctx.shadowBlur=20*flash;
 // Crate
 ctx.fillStyle=‘rgba(35,25,8,0.94)’;
-ctx.beginPath(); ctx.roundRect(-21,-21,42,42,5); ctx.fill();
+ctx.beginPath(); rr(ctx,-21,-21,42,42,5); ctx.fill();
 ctx.strokeStyle=w.color; ctx.lineWidth=2.2*flash;
-ctx.beginPath(); ctx.roundRect(-21,-21,42,42,5); ctx.stroke();
+ctx.beginPath(); rr(ctx,-21,-21,42,42,5); ctx.stroke();
 // Straps
 ctx.strokeStyle=w.color; ctx.lineWidth=1; ctx.globalAlpha=0.4;
 ctx.beginPath(); ctx.moveTo(-21,0); ctx.lineTo(21,0); ctx.stroke();
@@ -250,14 +299,14 @@ ctx.fillStyle=‘rgba(0,0,0,0.35)’;
 ctx.beginPath(); ctx.ellipse(0,22,40,8,0,0,Math.PI*2); ctx.fill();
 // Body
 ctx.fillStyle = dmg>0.6?’#8B0000’:dmg>0.3?’#cc4400’:’#cc3300’;
-ctx.beginPath(); ctx.roundRect(-42,-14,84,28,7); ctx.fill();
+ctx.beginPath(); rr(ctx,-42,-14,84,28,7); ctx.fill();
 // Roof
 ctx.fillStyle = dmg>0.5?’#555’:’#888’;
-ctx.beginPath(); ctx.roundRect(-24,-28,48,18,5); ctx.fill();
+ctx.beginPath(); rr(ctx,-24,-28,48,18,5); ctx.fill();
 // Windows
 ctx.fillStyle=‘rgba(140,210,255,0.75)’;
-ctx.beginPath(); ctx.roundRect(-22,-26,20,14,3); ctx.fill();
-ctx.beginPath(); ctx.roundRect(2,-26,20,14,3); ctx.fill();
+ctx.beginPath(); rr(ctx,-22,-26,20,14,3); ctx.fill();
+ctx.beginPath(); rr(ctx,2,-26,20,14,3); ctx.fill();
 // Wheels
 ctx.fillStyle=’#222’;
 ctx.beginPath(); ctx.ellipse(-26,16,11,11,0,0,Math.PI*2); ctx.fill();
@@ -784,12 +833,12 @@ state.zombies.forEach(z=>drawZombie(z.x,z.y,z.scale,z.hp,z.maxHp,z.type));
 state.bosses.forEach(boss=>{
 drawZombie(boss.x,boss.y,boss.scale,boss.hp,boss.maxHp,‘boss’);
 const bW=80, bf=(boss.hp/boss.maxHp)*bW;
-ctx.fillStyle=’#111’; ctx.beginPath(); ctx.roundRect(boss.x-bW/2,boss.y-68,bW,10,3); ctx.fill();
+ctx.fillStyle=’#111’; ctx.beginPath(); rr(ctx,boss.x-bW/2,boss.y-68,bW,10,3); ctx.fill();
 const pc=boss.hp/boss.maxHp;
 ctx.fillStyle=pc>.5?’#44ff44’:pc>.25?’#ffaa00’:’#ff2222’;
-ctx.beginPath(); ctx.roundRect(boss.x-bW/2,boss.y-68,bf,10,3); ctx.fill();
+ctx.beginPath(); rr(ctx,boss.x-bW/2,boss.y-68,bf,10,3); ctx.fill();
 ctx.strokeStyle=’#555’; ctx.lineWidth=1;
-ctx.beginPath(); ctx.roundRect(boss.x-bW/2,boss.y-68,bW,10,3); ctx.stroke();
+ctx.beginPath(); rr(ctx,boss.x-bW/2,boss.y-68,bW,10,3); ctx.stroke();
 ctx.fillStyle=’#fff’; ctx.font=‘bold 9px Arial’; ctx.textAlign=‘center’;
 ctx.fillText(`${boss.hp}/${boss.maxHp}`,boss.x,boss.y-60);
 });
@@ -838,52 +887,55 @@ drawHUD(W,H);
 
 // ── HUD ────────────────────────────────────────────────────────────────
 function drawHUD(W,H){
-ctx.fillStyle=‘rgba(0,0,0,0.56)’;
-ctx.beginPath(); ctx.roundRect(10,10,W-20,68,8); ctx.fill();
+const fs = Math.max(10, Math.min(13, W/70)); // scale font to screen width
+const pad = 8;
+const barH = 58;
+ctx.fillStyle=‘rgba(0,0,0,0.60)’;
+ctx.beginPath(); rr(ctx,pad,pad,W-pad*2,barH,7); ctx.fill();
 
 // Row 1
-ctx.font=‘bold 13px Arial Black’;
-ctx.fillStyle=’#44ff88’; ctx.shadowColor=’#44ff88’; ctx.shadowBlur=5;
-ctx.textAlign=‘left’; ctx.fillText(`🪖 ${state.soldiers}`,20,36);
+ctx.font=`bold ${fs}px Arial`;
+ctx.fillStyle=’#44ff88’; ctx.shadowColor=’#44ff88’; ctx.shadowBlur=4;
+ctx.textAlign=‘left’; ctx.fillText(`🪖 ${state.soldiers}`,pad+10,pad+20);
 ctx.shadowBlur=0;
-ctx.fillStyle=’#ffe044’; ctx.shadowColor=’#ffe044’; ctx.shadowBlur=5;
-ctx.textAlign=‘center’; ctx.fillText(`⭐ ${state.score.toLocaleString()}`,W/2,36);
+ctx.fillStyle=’#ffe044’; ctx.shadowColor=’#ffe044’; ctx.shadowBlur=4;
+ctx.textAlign=‘center’; ctx.fillText(`⭐ ${state.score.toLocaleString()}`,W/2,pad+20);
 ctx.shadowBlur=0;
 ctx.fillStyle=’#aaddff’; ctx.textAlign=‘right’;
 const m=Math.floor(state.elapsed/60), s=Math.floor(state.elapsed%60).toString().padStart(2,‘0’);
-ctx.fillText(`⏱ ${m}:${s}`,W-20,36);
+ctx.fillText(`⏱ ${m}:${s}`,W-pad-10,pad+20);
 
 // Row 2
-ctx.font=‘bold 11px Arial Black’;
-ctx.fillStyle=’#ffd700’; ctx.shadowColor=’#ffd700’; ctx.shadowBlur=4;
-ctx.textAlign=‘left’; ctx.fillText(`👑 Rnd ${state.round}  ×${state.zombieHpMult}HP`,20,64);
+const fs2 = Math.max(9, Math.min(11, W/82));
+ctx.font=`bold ${fs2}px Arial`;
+ctx.fillStyle=’#ffd700’; ctx.shadowColor=’#ffd700’; ctx.shadowBlur=3;
+ctx.textAlign=‘left’; ctx.fillText(`👑 R${state.round} ×${state.zombieHpMult}HP`,pad+10,pad+46);
 ctx.shadowBlur=0;
 
-// Centre: weapon timer bar, or reinf countdown, or kills
 if(state.currentWeapon!==‘bullet’&&state.weaponTimer>0){
 const w=WEAPONS[state.currentWeapon];
 const sec=Math.ceil(state.weaponTimer/60);
-ctx.fillStyle=w.color; ctx.shadowColor=w.glow; ctx.shadowBlur=7;
-ctx.textAlign=‘center’; ctx.fillText(`${w.name.toUpperCase()} ${sec}s`,W/2,64);
+ctx.fillStyle=w.color; ctx.shadowColor=w.glow; ctx.shadowBlur=6;
+ctx.textAlign=‘center’; ctx.fillText(`${w.name.toUpperCase()} ${sec}s`,W/2,pad+46);
 ctx.shadowBlur=0;
-const bW=110, bf=(state.weaponTimer/w.dur)*bW;
-ctx.fillStyle=’#333’; ctx.fillRect(W/2-bW/2,66,bW,4);
-ctx.fillStyle=w.color; ctx.fillRect(W/2-bW/2,66,bf,4);
+const bW=Math.min(110,W*0.25);
+const bf= w.dur > 0 ? (state.weaponTimer/w.dur)*bW : 0;
+ctx.fillStyle=’#333’; ctx.fillRect(W/2-bW/2,pad+49,bW,4);
+ctx.fillStyle=w.color; ctx.fillRect(W/2-bW/2,pad+49,Math.max(0,bf),4);
 } else if(!state.reinforcementsStarted){
 const t=Math.max(0,60-state.elapsed);
 ctx.fillStyle=’#44aaff’; ctx.textAlign=‘center’;
-ctx.fillText(`🔵 +10 in ${Math.ceil(t)}s`,W/2,64);
+ctx.fillText(`🔵 +10 in ${Math.ceil(t)}s`,W/2,pad+46);
 } else {
 ctx.fillStyle=’#cc88ff’; ctx.textAlign=‘center’;
-ctx.fillText(`☠ ${state.kills} kills | Bosses: ${state.bossKills}`,W/2,64);
+ctx.fillText(`☠ ${state.kills} | Boss:${state.bossKills}`,W/2,pad+46);
 }
 
-// Right: boss/king timer
 const tSince=(Date.now()-state.lastBossTime)/1000;
 const nb=Math.max(0,60-tSince);
 ctx.fillStyle=nb<10?’#ff4444’:’#ffaa44’;
 ctx.textAlign=‘right’;
-ctx.fillText(`${state.kingSpawned?'💀 Boss':'👑 KING'} in:${Math.ceil(nb)}s`,W-20,64);
+ctx.fillText(`${state.kingSpawned?'💀':'👑'} ${Math.ceil(nb)}s`,W-pad-10,pad+46);
 }
 
 // ── LOOP ───────────────────────────────────────────────────────────────
@@ -894,6 +946,8 @@ animFrame=requestAnimationFrame(loop);
 }
 
 function startGame(prev){
+if(_starting) return; _starting=true;
+setTimeout(()=>_starting=false, 500);
 document.getElementById(‘startScreen’).style.display=‘none’;
 document.getElementById(‘gameOverScreen’).style.display=‘none’;
 document.getElementById(‘overlay’).style.display=‘none’;

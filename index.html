@@ -172,11 +172,11 @@ if(!state || state.gameOver){ airBtn.style.display=‘none’; return; }
 airBtn.style.display=‘block’;
 if(state.airstrikes>0){
 airBtn.className=‘ready’;
-airBtn.innerHTML=`💣<br>STRIKE<br>×${state.airstrikes}`;
+airBtn.innerHTML=`STRIKE x${state.airstrikes}`;
 } else {
 airBtn.className=‘locked’;
 const needed = state.airstrikeThreshold - state.score;
-airBtn.innerHTML=`💣<br>${needed>=1000?Math.ceil(needed/1000)+'k':needed}`;
+airBtn.innerHTML=`STRIKE<br>${needed>=1000?Math.ceil(needed/1000)+'k':needed}`;
 }
 }
 
@@ -614,7 +614,7 @@ state.zombies.forEach(z=>spawnParticles(z.x,z.y,’#ff4400’,5));
 state.zombies=[];
 state.bosses.forEach(b=>{if(!b.dead)spawnParticles(b.x,b.y,’#ffd700’,8);});
 state.kingDefeated=true; state.roundClearTimer=180;
-addFloat(canvas.width/2,canvas.height/2,`👑 KING SLAIN! ROUND ${state.round} CLEAR!`,’#ffd700’,true);
+addFloat(canvas.width/2,canvas.height/2,`KING SLAIN! ROUND ${state.round} CLEAR!`,’#ffd700’,true);
 }
 
 // ── AIRSTRIKE ─────────────────────────────────────────────────────────
@@ -652,7 +652,7 @@ function strikeLightning(x,y){
 const radius=80;
 state.lightningStrikes.push({x,y,radius,life:30});
 spawnParticles(x,y,’#ffff44’,20,15);
-addFloat(x,y-20,‘⚡ ZAP!’,’#ffff44’,true);
+addFloat(x,y-20,‘ZAP!’,’#ffff44’,true);
 // Damage zombies in radius
 state.zombies=state.zombies.filter(z=>{
 if(Math.hypot(z.x-x,z.y-y)<radius){
@@ -720,14 +720,14 @@ for(let i=0;i<cnt;i++) spawnZombie();
 }
 if(now-state.lastBossTime>60000){
 state.lastBossTime=now; spawnBoss();
-addFloat(W/2,H/2,‘⚠ BOSS INCOMING!’,’#ff4444’,true);
+addFloat(W/2,H/2,‘BOSS INCOMING!’,’#ff4444’,true);
 }
 if(now-state.lastSoldierPickupTime>8000){state.lastSoldierPickupTime=now;spawnSoldierPickup();}
 if(state.elapsed>=60){
 if(!state.reinforcementsStarted){
 state.reinforcementsStarted=true;state.lastReinfTime=now;
 spawnReinforcement();
-addFloat(W/2,H/2+40,‘🔵 +10 REINFORCEMENTS!’,’#44aaff’,true);
+addFloat(W/2,H/2+40,’+10 REINFORCEMENTS!’,’#44aaff’,true);
 }
 if(now-state.lastReinfTime>15000){state.lastReinfTime=now;spawnReinforcement();}
 }
@@ -739,7 +739,7 @@ if(now-state.lastCarTime>25000){state.lastCarTime=now;spawnCar();}
 if(state.score>=state.airstrikeThreshold){
 state.airstrikes++;
 state.airstrikeThreshold+=20000;
-addFloat(W/2,H/2-40,‘💣 AIRSTRIKE AWARDED!’,’#ff4400’,true);
+addFloat(W/2,H/2-40,‘AIRSTRIKE AWARDED!’,’#ff4400’,true);
 updateAirBtn();
 }
 
@@ -772,7 +772,7 @@ if(bomb.y>=bomb.ty||bomb.y>H){
 const blastR=120;
 spawnParticles(bomb.x,bomb.y,’#ff6600’,25,12);
 spawnParticles(bomb.x,bomb.y,’#ffdd00’,15,8);
-addFloat(bomb.x,bomb.y-20,‘💥 BOOM!’,’#ff4400’,true);
+addFloat(bomb.x,bomb.y-20,‘BOOM!’,’#ff4400’,true);
 state.zombies=state.zombies.filter(z=>{
 if(Math.hypot(z.x-bomb.x,z.y-bomb.y)<blastR){
 const pts=z.type===‘special’?z.maxHp*5:10;
@@ -834,7 +834,7 @@ bRem.add(bi); car.hp–;
 spawnParticles(b.x,b.y,’#ffaa00’,3);
 if(car.hp<=0){
 car.exploding=true;car.explodeTimer=60;
-addFloat(car.x,car.y-45,‘💥 BOOM!’,’#ff6600’,true);
+addFloat(car.x,car.y-45,‘BOOM!’,’#ff6600’,true);
 const blastR=130;
 state.zombies=state.zombies.filter(z=>{
 if(Math.hypot(z.x-car.x,z.y-car.y)<blastR){
@@ -870,44 +870,69 @@ if(b.y>=eatY){const ate=Math.min(state.soldiers,5);state.soldiers=Math.max(0,sta
 return true;
 });
 
-// Soldier pickups
+// Helper: check if any soldier is within range of a pickup
+function soldierNear(px, py, range) {
+const maxR=12, sp=14, cnt=Math.min(state.soldiers,maxR*2);
+const r1=Math.min(cnt,maxR), r2=cnt-r1;
+for(let i=0;i<r1;i++){
+const sx=state.squadX-(r1-1)*sp/2+i*sp, sy=squadY-10;
+if(Math.hypot(px-sx,py-sy)<range) return true;
+}
+for(let i=0;i<r2;i++){
+const sx=state.squadX-(r2-1)*sp/2+i*sp, sy=squadY-26;
+if(Math.hypot(px-sx,py-sy)<range) return true;
+}
+return false;
+}
+
+// Soldier pickups — must be touched by a soldier to collect
 state.soldierPickups=state.soldierPickups.filter(p=>{
 p.y+=p.vy;
-if(p.y>=eatY){const b=state.elapsed>=60?10:1;state.soldiers+=b;addFloat(p.x,p.y,`+${b} 🪖`,’#44ff88’);spawnParticles(p.x,p.y,’#44ff88’,7);return false;}
+if(soldierNear(p.x,p.y,36)){
+const b=state.elapsed>=60?10:1;
+state.soldiers+=b;
+addFloat(p.x,p.y,`+${b} SOLDIERS`,’#44ff88’);
+spawnParticles(p.x,p.y,’#44ff88’,7);
+return false;
+}
 return p.y<H+30;
 });
 state.reinforcements=state.reinforcements.filter(r=>{
 r.y+=r.vy;
-if(r.y>=eatY){state.soldiers+=10;addFloat(r.x,r.y,’+10 🪖’,’#44aaff’);spawnParticles(r.x,r.y,’#44aaff’,14);return false;}
+if(soldierNear(r.x,r.y,36)){
+state.soldiers+=10;
+addFloat(r.x,r.y,’+10 SOLDIERS’,’#44aaff’);
+spawnParticles(r.x,r.y,’#44aaff’,14);
+return false;
+}
 return r.y<H+30;
 });
 state.weaponPickups=state.weaponPickups.filter(p=>{
 p.y+=p.vy;
-if(p.y>=eatY){
+if(soldierNear(p.x,p.y,36)){
 state.currentWeapon=p.weaponType;state.weaponTimer=WEAPONS[p.weaponType].dur;state.fireTimer=0;
 const w=WEAPONS[p.weaponType];
 addFloat(p.x,p.y-20,`${w.name.toUpperCase()} ACTIVATED!`,w.color,true);
-spawnParticles(p.x,p.y,w.glow,16,12);return false;
+spawnParticles(p.x,p.y,w.glow,16,12);
+return false;
 }
 return p.y<H+30;
 });
 
-// Lightning pickups
+// Lightning pickups — must be touched by a soldier
 state.lightningPickups=state.lightningPickups.filter(p=>{
 p.y+=p.vy;
-if(p.y>=eatY){
-// Strike 3 random zombie positions
+if(soldierNear(p.x,p.y,36)){
 const pool=[…state.zombies,…state.bosses];
 const picked=[];
 while(picked.length<3&&pool.length>0){
 picked.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
 }
-// Fill remaining with random screen positions
 while(picked.length<3){
 picked.push({x:50+Math.random()*(W-100),y:50+Math.random()*(H*0.6)});
 }
 picked.forEach(t=>strikeLightning(t.x,t.y));
-addFloat(p.x,p.y-30,‘⚡⚡⚡ LIGHTNING!’,’#ffff00’,true);
+addFloat(p.x,p.y-30,’*** LIGHTNING! ***’,’#ffff00’,true);
 return false;
 }
 return p.y<H+30;
@@ -1044,17 +1069,17 @@ ctx.beginPath();rr(ctx,pad,pad,W-pad*2,barH,7);ctx.fill();
 
 ctx.font=`bold ${fs}px Arial`;
 ctx.fillStyle=’#44ff88’;ctx.shadowColor=’#44ff88’;ctx.shadowBlur=4;
-ctx.textAlign=‘left’;ctx.fillText(`🪖 ${state.soldiers}`,pad+10,pad+20);ctx.shadowBlur=0;
+ctx.textAlign=‘left’;ctx.fillText(`[S] ${state.soldiers}`,pad+10,pad+20);ctx.shadowBlur=0;
 ctx.fillStyle=’#ffe044’;ctx.shadowColor=’#ffe044’;ctx.shadowBlur=4;
-ctx.textAlign=‘center’;ctx.fillText(`⭐ ${state.score.toLocaleString()}`,W/2,pad+20);ctx.shadowBlur=0;
+ctx.textAlign=‘center’;ctx.fillText(`* ${state.score.toLocaleString()}`,W/2,pad+20);ctx.shadowBlur=0;
 ctx.fillStyle=’#aaddff’;ctx.textAlign=‘right’;
 const m=Math.floor(state.elapsed/60),s=Math.floor(state.elapsed%60).toString().padStart(2,‘0’);
-ctx.fillText(`⏱ ${m}:${s}`,W-pad-10,pad+20);
+ctx.fillText(`${m}:${s}`,W-pad-10,pad+20);
 
 const fs2=Math.max(9,Math.min(11,W/82));
 ctx.font=`bold ${fs2}px Arial`;
 ctx.fillStyle=’#ffd700’;ctx.shadowColor=’#ffd700’;ctx.shadowBlur=3;
-ctx.textAlign=‘left’;ctx.fillText(`👑 R${state.round} ×${state.zombieHpMult}HP`,pad+10,pad+46);ctx.shadowBlur=0;
+ctx.textAlign=‘left’;ctx.fillText(`R${state.round} x${state.zombieHpMult}HP`,pad+10,pad+46);ctx.shadowBlur=0;
 
 if(state.currentWeapon!==‘bullet’&&state.weaponTimer>0){
 const w=WEAPONS[state.currentWeapon],sec=Math.ceil(state.weaponTimer/60);
@@ -1066,15 +1091,15 @@ ctx.fillStyle=w.color;ctx.fillRect(W/2-bW/2,pad+49,Math.max(0,bf),4);
 } else if(!state.reinforcementsStarted){
 const t=Math.max(0,60-state.elapsed);
 ctx.fillStyle=’#44aaff’;ctx.textAlign=‘center’;
-ctx.fillText(`🔵 +10 in ${Math.ceil(t)}s`,W/2,pad+46);
+ctx.fillText(`+10 REINF in ${Math.ceil(t)}s`,W/2,pad+46);
 } else {
 ctx.fillStyle=’#cc88ff’;ctx.textAlign=‘center’;
-ctx.fillText(`☠ ${state.kills} | Boss:${state.bossKills}`,W/2,pad+46);
+ctx.fillText(`${state.kills} kills | B:${state.bossKills}`,W/2,pad+46);
 }
 
 const tSince=(Date.now()-state.lastBossTime)/1000,nb=Math.max(0,60-tSince);
 ctx.fillStyle=nb<10?’#ff4444’:’#ffaa44’;ctx.textAlign=‘right’;
-ctx.fillText(`${state.kingSpawned?'💀':'👑'} ${Math.ceil(nb)}s`,W-pad-10,pad+46);
+ctx.fillText(`${state.kingSpawned?'BOSS':'KING'} ${Math.ceil(nb)}s`,W-pad-10,pad+46);
 }
 
 // ── LOOP ──────────────────────────────────────────────────────────────
@@ -1099,7 +1124,7 @@ function showGameOver(){
 document.getElementById(‘overlay’).style.display=‘flex’;
 document.getElementById(‘gameOverScreen’).style.display=‘block’;
 const m=Math.floor(state.elapsed/60),s=Math.floor(state.elapsed%60);
-document.getElementById(‘finalStats’).innerHTML=` <div class="stat-line">👑 Reached Round: ${state.round}</div> <div class="stat-line">⭐ Score: ${state.score.toLocaleString()}</div> <div class="stat-line">☠ Kills: ${state.kills}</div> <div class="stat-line">💀 Bosses Slain: ${state.bossKills}</div> <div class="stat-line">⏱ Survived: ${m}m ${s}s</div>`;
+document.getElementById(‘finalStats’).innerHTML=` <div class="stat-line">Round: ${state.round}</div> <div class="stat-line">⭐ Score: ${state.score.toLocaleString()}</div> <div class="stat-line">Kills: ${state.kills}</div> <div class="stat-line">Bosses Slain: ${state.bossKills}</div> <div class="stat-line">⏱ Survived: ${m}m ${s}s</div>`;
 }
 </script>
 

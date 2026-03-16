@@ -17,8 +17,8 @@
   #gameCanvas { display:block; touch-action:none; }
   #overlay { position:fixed; top:0; left:0; width:100%; height:100%;
     display:flex; align-items:center; justify-content:center;
-    z-index:20; pointer-events:none; }
-  #startScreen,#gameOverScreen { pointer-events:auto;
+    z-index:20; }
+  #startScreen,#gameOverScreen {
     background:rgba(10,5,20,0.95); border:2px solid #ff6b35; border-radius:14px;
     padding:22px 26px; text-align:center; color:white; width:88vw; max-width:400px; }
   h1 { color:#ff6b35; font-size:1.7em; text-shadow:0 0 16px #ff6b35; margin-bottom:6px; }
@@ -52,12 +52,12 @@
       💣 <b style="color:#ff4400">Airstrike</b> awarded every 20,000 pts!<br>
       👑 Kill the King Zombie to clear the round!
     </p>
-    <button class="btn" id="btnStart">▶ START GAME</button>
+    <button class="btn" id="btnStart" onclick="startGame()">▶ START GAME</button>
   </div>
   <div id="gameOverScreen" style="display:none">
     <h2>💀 SQUAD WIPED</h2>
     <div id="finalStats"></div>
-    <button class="btn" id="btnRestart">↩ TRY AGAIN</button>
+    <button class="btn" id="btnRestart" onclick="startGame()">↩ TRY AGAIN</button>
   </div>
 </div>
 <button id="airBtn">💣<br>AIR<br>STRIKE</button>
@@ -102,18 +102,18 @@ return t.clientX-r.left;
 canvas.addEventListener(‘mousemove’, e=>{
 const r=canvas.getBoundingClientRect(); mouseX=e.clientX-r.left;
 });
-canvas.addEventListener(‘touchmove’,  e=>{ e.preventDefault(); mouseX=getTouchX(e); },{passive:false});
-canvas.addEventListener(‘touchstart’, e=>{ e.preventDefault(); mouseX=getTouchX(e); },{passive:false});
+canvas.addEventListener(‘touchmove’, e=>{
+const ov=document.getElementById(‘overlay’);
+if(ov && ov.style.display===‘none’){ e.preventDefault(); mouseX=getTouchX(e); }
+},{passive:false});
+canvas.addEventListener(‘touchstart’, e=>{
+const ov=document.getElementById(‘overlay’);
+if(ov && ov.style.display===‘none’){ e.preventDefault(); mouseX=getTouchX(e); }
+},{passive:false});
 
 function wireButtons(){
-[‘btnStart’,‘btnRestart’].forEach(id=>{
-const btn=document.getElementById(id);
-if(!btn) return;
-btn.addEventListener(‘click’,    e=>{ e.preventDefault(); startGame(); });
-btn.addEventListener(‘touchend’, e=>{ e.preventDefault(); startGame(); });
-});
-airBtn.addEventListener(‘click’,    e=>{ e.preventDefault(); fireAirstrike(); });
-airBtn.addEventListener(‘touchend’, e=>{ e.preventDefault(); fireAirstrike(); });
+airBtn.addEventListener(‘click’,    e=>{ e.stopPropagation(); fireAirstrike(); });
+airBtn.addEventListener(‘touchend’, e=>{ e.stopPropagation(); e.preventDefault(); fireAirstrike(); });
 }
 if(document.readyState===‘loading’) document.addEventListener(‘DOMContentLoaded’,wireButtons);
 else wireButtons();

@@ -33,7 +33,7 @@ body{background:#000;overflow:hidden;font-family:'Arial Black',Arial,sans-serif;
 #retryBtn{background:#ff6b35;color:#fff;border:none;padding:14px 0;font-size:1em;font-family:‘Arial Black’,Arial,sans-serif;border-radius:10px;cursor:pointer;margin-top:14px;width:100%;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 
 /* Cog button */
-#cogBtn{position:fixed;bottom:18px;left:18px;z-index:30;pointer-events:auto;background:rgba(10,5,20,0.85);border:1px solid rgba(255,107,53,0.5);border-radius:50%;width:44px;height:44px;font-size:20px;color:rgba(255,107,53,0.85);cursor:pointer;display:none;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+#cogBtn{position:fixed;top:18px;left:18px;z-index:30;pointer-events:auto;background:rgba(10,5,20,0.85);border:1px solid rgba(255,107,53,0.5);border-radius:50%;width:44px;height:44px;font-size:20px;color:rgba(255,107,53,0.85);cursor:pointer;display:none;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 
 /* Cog menu */
 #cogMenuOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:80;display:none;align-items:center;justify-content:center;padding:16px;}
@@ -52,8 +52,8 @@ body{background:#000;overflow:hidden;font-family:'Arial Black',Arial,sans-serif;
 .volSlider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#ff6b35;cursor:pointer;}
 
 /* Airstrike button */
-#airBtn{position:fixed;bottom:18px;right:18px;z-index:30;background:rgba(10,5,20,0.88);border:2px solid #ff4400;border-radius:12px;color:#fff;font-family:‘Arial Black’,Arial,sans-serif;font-size:0.7em;padding:10px 12px;text-align:center;pointer-events:auto;touch-action:manipulation;cursor:pointer;display:none;min-width:64px;-webkit-tap-highlight-color:transparent;}
-#airBtn.ready{border-color:#ff4400;box-shadow:0 0 12px rgba(255,68,0,0.6);}
+#airBtn{position:fixed;bottom:30%;left:14px;z-index:30;background:#1a0800;border:3px solid #ff4400;border-radius:50%;color:#fff;font-family:‘Arial Black’,Arial,sans-serif;font-size:9px;letter-spacing:1px;width:64px;height:64px;text-align:center;pointer-events:auto;touch-action:manipulation;cursor:pointer;display:none;-webkit-tap-highlight-color:transparent;flex-direction:column;align-items:center;justify-content:center;padding:0;}
+#airBtn.ready{border-color:#ff4400;box-shadow:0 0 16px rgba(255,68,0,0.9);background:#2a0800;}
 #airBtn.locked{border-color:#555;color:#888;}
 
 #ytPlayerContainer{position:fixed;left:-220px;bottom:0;width:200px;height:200px;pointer-events:none;}
@@ -114,7 +114,7 @@ body{background:#000;overflow:hidden;font-family:'Arial Black',Arial,sans-serif;
 
 <!-- Airstrike button -->
 
-<button id="airBtn">STRIKE</button>
+<button id="airBtn"><div style="font-size:22px;line-height:1;">💣</div><div id="airBtnLabel" style="font-size:8px;letter-spacing:1px;margin-top:2px;">STRIKE</div></button>
 
 <!-- Hidden YouTube player -->
 
@@ -176,6 +176,86 @@ function sfxZombieDie() { playTone(110, 'sawtooth', 0.18, 0.12); }
 function sfxPickup() { playTone(660, 'sine', 0.15, 0.1); playTone(880, 'sine', 0.15, 0.1, 0.08); }
 function sfxAirstrike() { playTone(55, 'sawtooth', 0.3, 0.5); playTone(80, 'sawtooth', 0.25, 0.4, 0.1); }
 function sfxLaser() { playTone(1200, 'sine', 0.1, 0.05); }
+
+function sfxCarExplode() {
+  // Deep thud + low rumble — distinct from airstrike
+  if (!audioUnlocked || !audioCtx) return;
+  try {
+    // Initial punch
+    var o1 = audioCtx.createOscillator(), g1 = audioCtx.createGain();
+    o1.connect(g1); g1.connect(audioCtx.destination);
+    o1.type = 'sawtooth'; o1.frequency.setValueAtTime(180, audioCtx.currentTime);
+    o1.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.6);
+    g1.gain.setValueAtTime(0.5 * sfxVolume, audioCtx.currentTime);
+    g1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.7);
+    o1.start(); o1.stop(audioCtx.currentTime + 0.7);
+    // Glass/crunch layer
+    var o2 = audioCtx.createOscillator(), g2 = audioCtx.createGain();
+    o2.connect(g2); g2.connect(audioCtx.destination);
+    o2.type = 'square'; o2.frequency.setValueAtTime(440, audioCtx.currentTime);
+    o2.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.3);
+    g2.gain.setValueAtTime(0.25 * sfxVolume, audioCtx.currentTime);
+    g2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+    o2.start(); o2.stop(audioCtx.currentTime + 0.35);
+  } catch(e) {}
+}
+
+function sfxAirstrikeBomb() {
+  // High whistle dropping + distant boom — different from car explosion
+  if (!audioUnlocked || !audioCtx) return;
+  try {
+    // Falling whistle
+    var ow = audioCtx.createOscillator(), gw = audioCtx.createGain();
+    ow.connect(gw); gw.connect(audioCtx.destination);
+    ow.type = 'sine'; ow.frequency.setValueAtTime(1200, audioCtx.currentTime);
+    ow.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.5);
+    gw.gain.setValueAtTime(0.18 * sfxVolume, audioCtx.currentTime);
+    gw.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+    ow.start(); ow.stop(audioCtx.currentTime + 0.5);
+    // Distant boom
+    var ob = audioCtx.createOscillator(), gb = audioCtx.createGain();
+    ob.connect(gb); gb.connect(audioCtx.destination);
+    ob.type = 'sawtooth'; ob.frequency.setValueAtTime(60, audioCtx.currentTime + 0.45);
+    ob.frequency.exponentialRampToValueAtTime(18, audioCtx.currentTime + 1.2);
+    gb.gain.setValueAtTime(0, audioCtx.currentTime + 0.44);
+    gb.gain.setValueAtTime(0.4 * sfxVolume, audioCtx.currentTime + 0.45);
+    gb.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
+    ob.start(audioCtx.currentTime + 0.44); ob.stop(audioCtx.currentTime + 1.2);
+  } catch(e) {}
+}
+
+function sfxCarHornStart(car) {
+  // Returns oscillator node — caller stores it on car.hornNode to stop later
+  if (!audioUnlocked || !audioCtx) return null;
+  try {
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    var dist = audioCtx.createWaveShaper();
+    // Slight distortion for horn texture
+    var curve = new Float32Array(256);
+    for (var i = 0; i < 256; i++) { var x = (i * 2) / 256 - 1; curve[i] = (Math.PI + 300) * x / (Math.PI + 300 * Math.abs(x)); }
+    dist.curve = curve;
+    o.connect(dist); dist.connect(g); g.connect(audioCtx.destination);
+    o.type = 'sawtooth';
+    // Honk pattern: two-tone horn (A + E a fifth up)
+    o.frequency.value = 392; // G4
+    g.gain.value = 0.12 * sfxVolume;
+    o.start();
+    car.hornNode = o;
+    car.hornGain = g;
+    return o;
+  } catch(e) { return null; }
+}
+
+function sfxCarHornStop(car) {
+  if (!car.hornNode) return;
+  try {
+    car.hornGain.gain.setValueAtTime(car.hornGain.gain.value, audioCtx.currentTime);
+    car.hornGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+    car.hornNode.stop(audioCtx.currentTime + 0.12);
+  } catch(e) {}
+  car.hornNode = null; car.hornGain = null;
+}
 
 /* =========================================================
    YOUTUBE MUSIC
@@ -364,6 +444,8 @@ function makeState(prev) {
   var bossKills = prev ? prev.bossKills : 0;
   var soldiers  = prev ? prev.soldiers : 1;
   var airstrikes= prev ? prev.airstrikes : 0;
+  var prevSnipers = prev && prev.snipers ? prev.snipers : null;
+  var nextVehicleScore = prev && prev.nextVehicleScore ? prev.nextVehicleScore : 50000;
   return {
     running: true,
     round: round,
@@ -389,6 +471,7 @@ function makeState(prev) {
     cars: [],
     bombs: [],
     airPlane: null,
+    fireLines: [],
     lightningStrikes: [],
     particles: [],
     floats: [],
@@ -402,7 +485,17 @@ function makeState(prev) {
     kingSpawned: false,
     kingDefeated: false,
     roundClearTimer: 0,
-    gameOver: false
+    gameOver: false,
+    nextVehicleScore: nextVehicleScore,
+    upgradeZombieSpawned: false,
+    snipers: prevSnipers || [
+      { x: 0, y: 0, fireTimer: 0, level: 1, alive: true, side: 'left' },
+      { x: 0, y: 0, fireTimer: 0, level: 1, alive: true, side: 'right' }
+    ],
+    copCars: [
+      { side: 'left',  launched: false, x: 0, y: 0, vx: 0, vy: 0, hp: 50, maxHp: 50, flashTimer: 0, active: true },
+      { side: 'right', launched: false, x: 0, y: 0, vx: 0, vy: 0, hp: 50, maxHp: 50, flashTimer: 0, active: true }
+    ]
   };
 }
 
@@ -419,10 +512,11 @@ function rr(x, y, w, h, r) {
   ctx.closePath();
 }
 
-function drawZombie(x, y, scale, hp, maxHp, type) {
+function drawZombie(x, y, scale, hp, maxHp, type, immune) {
   ctx.save(); ctx.translate(x, y); ctx.scale(scale, scale);
-  var bc = type === 'boss' ? '#8B0000' : type === 'special' ? '#6a0dad' : '#2d5a27';
-  var hc = type === 'boss' ? '#b22222' : type === 'special' ? '#9b30d0' : '#5a9952';
+  var bc = type === 'boss' ? '#8B0000' : type === 'upgrade' ? '#440044' : type === 'special' ? '#6a0dad' : '#2d5a27';
+  var hc = type === 'boss' ? '#b22222' : type === 'upgrade' ? '#cc00cc' : type === 'special' ? '#9b30d0' : '#5a9952';
+  if (immune) { ctx.shadowColor = '#aaaaff'; ctx.shadowBlur = 18; }
   // Shadow
   ctx.fillStyle = 'rgba(0,0,0,0.3)';
   ctx.beginPath(); ctx.ellipse(0, 23, 12, 4, 0, 0, Math.PI * 2); ctx.fill();
@@ -484,11 +578,34 @@ function drawSoldier(x, y, scale) {
   ctx.restore();
 }
 
-function drawPickup(x, y, label, color) {
+function drawPickup(x, y, label, color, shape) {
   ctx.save();
-  ctx.shadowColor = color; ctx.shadowBlur = 14;
-  ctx.fillStyle = color; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
-  ctx.beginPath(); rr(x - 16, y - 14, 32, 28, 6); ctx.fill(); ctx.stroke();
+  ctx.shadowColor = color; ctx.shadowBlur = 16;
+  ctx.fillStyle = color; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  if (shape === 'circle') {
+    ctx.arc(x, y, 16, 0, Math.PI*2);
+  } else if (shape === 'diamond') {
+    ctx.moveTo(x, y-17); ctx.lineTo(x+13, y); ctx.lineTo(x, y+17); ctx.lineTo(x-13, y); ctx.closePath();
+  } else if (shape === 'bolt') {
+    // Lightning bolt shape
+    ctx.moveTo(x+5, y-16); ctx.lineTo(x-4, y-2); ctx.lineTo(x+3, y-2);
+    ctx.lineTo(x-5, y+16); ctx.lineTo(x+4, y+2); ctx.lineTo(x-3, y+2); ctx.closePath();
+  } else if (shape === 'flame') {
+    ctx.moveTo(x, y-16); ctx.bezierCurveTo(x+12, y-8, x+10, y+4, x, y+16);
+    ctx.bezierCurveTo(x-10, y+4, x-12, y-8, x, y-16); ctx.closePath();
+  } else if (shape === 'star') {
+    for (var si=0; si<5; si++) {
+      var a1 = (si*4-1)*Math.PI/5, a2 = (si*4+1)*Math.PI/5;
+      if (si===0) ctx.moveTo(x+16*Math.cos(a1-Math.PI/2), y+16*Math.sin(a1-Math.PI/2));
+      else ctx.lineTo(x+16*Math.cos(a1-Math.PI/2), y+16*Math.sin(a1-Math.PI/2));
+      ctx.lineTo(x+7*Math.cos(a2-Math.PI/2), y+7*Math.sin(a2-Math.PI/2));
+    }
+    ctx.closePath();
+  } else {
+    rr(x-16, y-14, 32, 28, 6);
+  }
+  ctx.fill(); ctx.stroke();
   ctx.shadowBlur = 0; ctx.fillStyle = '#fff';
   ctx.font = 'bold 9px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(label, x, y);
@@ -496,20 +613,35 @@ function drawPickup(x, y, label, color) {
 }
 
 function drawCar(car) {
-  ctx.save(); ctx.translate(car.x, car.y);
+  ctx.save();
+  if (car.burning) ctx.globalAlpha = car.fadeAlpha !== undefined ? car.fadeAlpha : 1;
+  ctx.translate(car.x, car.y);
   var clr = car.type === 'police' ? '#002299' : car.type === 'ambulance' ? '#ffffff' : '#884422';
+  // Burning tint
+  if (car.burning) clr = '#663300';
   ctx.fillStyle = clr;
   ctx.beginPath(); rr(-22, -12, 44, 24, 5); ctx.fill();
   ctx.fillStyle = 'rgba(150,220,255,0.7)';
   ctx.fillRect(-16, -10, 12, 8); ctx.fillRect(4, -10, 12, 8);
-  if (car.type === 'police') {
+  if (car.type === 'police' && !car.burning) {
     ctx.fillStyle = '#ff4444'; ctx.fillRect(-6, -14, 5, 5);
     ctx.fillStyle = '#4444ff'; ctx.fillRect(1, -14, 5, 5);
   }
-  // HP bar
-  var bW = 40, bf = (car.hp / car.maxHp) * bW;
-  ctx.fillStyle = '#333'; ctx.fillRect(-20, 16, bW, 4);
-  ctx.fillStyle = '#ff8800'; ctx.fillRect(-20, 16, Math.max(0, bf), 4);
+  // Flames when burning
+  if (car.burning) {
+    var ft = Date.now() * 0.01;
+    ctx.fillStyle = 'rgba(255,100,0,0.85)';
+    ctx.beginPath(); ctx.ellipse(0, -14, 8+Math.sin(ft)*3, 10+Math.cos(ft*1.3)*3, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,220,0,0.7)';
+    ctx.beginPath(); ctx.ellipse(0, -18, 5+Math.sin(ft*1.7)*2, 7+Math.cos(ft)*2, 0, 0, Math.PI*2); ctx.fill();
+  }
+  // HP bar only when not burning
+  if (!car.burning) {
+    var bW = 40, bf = (car.hp / car.maxHp) * bW;
+    ctx.fillStyle = '#333'; ctx.fillRect(-20, 16, bW, 4);
+    ctx.fillStyle = '#ff8800'; ctx.fillRect(-20, 16, Math.max(0, bf), 4);
+  }
+  ctx.globalAlpha = 1;
   ctx.restore();
 }
 
@@ -523,30 +655,126 @@ function drawParticle(p) {
 
 function drawBullet(b) {
   ctx.save();
-  var wc = WEAPONS[b.weapon || 'bullet'];
-  ctx.fillStyle = wc.color; ctx.shadowColor = wc.glow; ctx.shadowBlur = 8;
-  if (b.weapon === 'flamethrower') {
-    ctx.globalAlpha = 0.7 + Math.random() * 0.3;
-    ctx.beginPath(); ctx.arc(b.x, b.y, 5 + Math.random() * 3, 0, Math.PI * 2); ctx.fill();
+  if (b.weapon === 'laser') {
+    // Long bright blue beam straight up from bullet position
+    ctx.strokeStyle = '#44aaff'; ctx.lineWidth = 2; ctx.globalAlpha = 0.9;
+    ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x, b.y - 40); ctx.stroke();
+    ctx.strokeStyle = '#aaddff'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x, b.y - 40); ctx.stroke();
+  } else if (b.weapon === 'sniper') {
+    ctx.fillStyle = '#ffee44';
+    ctx.fillRect(b.x - 1, b.y - 7, 3, 14);
+  } else if (b.weapon === 'flamethrower') {
+    ctx.globalAlpha = 0.85;
+    ctx.fillStyle = b.age < 8 ? '#ffee44' : '#ff6600';
+    ctx.beginPath(); ctx.arc(b.x, b.y, 5, 0, Math.PI*2); ctx.fill();
+  } else if (b.weapon === 'machinegun') {
+    ctx.fillStyle = '#ff88dd';
+    ctx.fillRect(b.x - 2, b.y - 7, 4, 14);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(b.x - 1, b.y - 3, 2, 4);
   } else {
-    ctx.fillRect(b.x - 2, b.y - 5, 4, 10);
+    ctx.fillStyle = '#ffee44';
+    ctx.fillRect(b.x - 1, b.y - 7, 3, 14);
   }
   ctx.restore();
 }
 
+
 function drawAirplane(p) {
   ctx.save(); ctx.translate(p.x, p.y);
-  ctx.fillStyle = '#aaa'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+  // Engine trail smoke
+  ctx.fillStyle = 'rgba(180,180,180,0.25)';
+  ctx.beginPath(); ctx.ellipse(-38, 0, 22, 5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(180,180,180,0.15)';
+  ctx.beginPath(); ctx.ellipse(-58, 2, 14, 4, 0, 0, Math.PI*2); ctx.fill();
+
+  // Fuselage — long horizontal body
+  ctx.fillStyle = '#778899';
   ctx.beginPath();
-  ctx.moveTo(0, -20); ctx.lineTo(-8, 10); ctx.lineTo(0, 5); ctx.lineTo(8, 10); ctx.closePath();
-  ctx.fill(); ctx.stroke();
+  ctx.moveTo(-30, -5); ctx.lineTo(28, -5);
+  ctx.lineTo(36, 0); // nose point
+  ctx.lineTo(28, 5); ctx.lineTo(-30, 5);
+  ctx.lineTo(-36, 0); // tail end
+  ctx.closePath(); ctx.fill();
+  // Fuselage highlight
+  ctx.fillStyle = '#99aabb';
+  ctx.fillRect(-20, -4, 40, 3);
+
+  // Cockpit canopy
+  ctx.fillStyle = 'rgba(120,200,255,0.8)';
+  ctx.beginPath(); ctx.ellipse(14, -3, 9, 5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#445566'; ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Main wings — wide swept back
+  ctx.fillStyle = '#667788';
+  ctx.beginPath();
+  ctx.moveTo(4, -4); ctx.lineTo(-14, -28); ctx.lineTo(-20, -28);
+  ctx.lineTo(-8, -4); ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(4, 4); ctx.lineTo(-14, 28); ctx.lineTo(-20, 28);
+  ctx.lineTo(-8, 4); ctx.closePath(); ctx.fill();
+  // Wing highlight
+  ctx.fillStyle = '#8899aa';
+  ctx.beginPath();
+  ctx.moveTo(2, -3); ctx.lineTo(-12, -24); ctx.lineTo(-14, -24);
+  ctx.lineTo(-6, -3); ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(2, 3); ctx.lineTo(-12, 24); ctx.lineTo(-14, 24);
+  ctx.lineTo(-6, 3); ctx.closePath(); ctx.fill();
+
+  // Tail fin — vertical
+  ctx.fillStyle = '#667788';
+  ctx.beginPath();
+  ctx.moveTo(-28, -4); ctx.lineTo(-36, -18); ctx.lineTo(-32, -4);
+  ctx.closePath(); ctx.fill();
+  // Tail wings — small horizontal
+  ctx.beginPath();
+  ctx.moveTo(-26, -3); ctx.lineTo(-34, -12); ctx.lineTo(-36, -12);
+  ctx.lineTo(-28, -3); ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-26, 3); ctx.lineTo(-34, 12); ctx.lineTo(-36, 12);
+  ctx.lineTo(-28, 3); ctx.closePath(); ctx.fill();
+
+  // Engine pods under wings
+  ctx.fillStyle = '#445566';
+  ctx.beginPath(); ctx.ellipse(-8, -20, 7, 3, -0.3, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(-8, 20, 7, 3, 0.3, 0, Math.PI*2); ctx.fill();
+  // Engine glow
+  ctx.fillStyle = 'rgba(255,160,40,0.7)';
+  ctx.beginPath(); ctx.arc(-14, -20, 2.5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(-14, 20, 2.5, 0, Math.PI*2); ctx.fill();
+
+  // Roundel / markings
+  ctx.fillStyle = '#cc2200';
+  ctx.beginPath(); ctx.arc(6, 0, 4, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(6, 0, 2.5, 0, Math.PI*2); ctx.fill();
+
   ctx.restore();
 }
 
 function drawBomb(b) {
   ctx.save(); ctx.translate(b.x, b.y);
-  ctx.fillStyle = '#ff6600'; ctx.shadowColor = '#ff4400'; ctx.shadowBlur = 12;
-  ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill();
+  // Trail
+  var tg = ctx.createLinearGradient(0, -20, 0, 8);
+  tg.addColorStop(0, 'rgba(255,100,0,0)');
+  tg.addColorStop(0.6, 'rgba(255,140,0,0.5)');
+  tg.addColorStop(1, 'rgba(255,60,0,0.9)');
+  ctx.fillStyle = tg;
+  ctx.beginPath(); ctx.ellipse(0, -8, 3, 16, 0, 0, Math.PI*2); ctx.fill();
+  // Body
+  ctx.shadowColor = '#ff6600'; ctx.shadowBlur = 16;
+  ctx.fillStyle = '#333';
+  ctx.beginPath(); ctx.ellipse(0, 0, 6, 8, 0, 0, Math.PI*2); ctx.fill();
+  // Nose cone
+  ctx.fillStyle = '#ff4400';
+  ctx.beginPath(); ctx.moveTo(0, 8); ctx.lineTo(-4, 2); ctx.lineTo(4, 2); ctx.closePath(); ctx.fill();
+  // Fins
+  ctx.fillStyle = '#555';
+  ctx.beginPath(); ctx.moveTo(-6, -6); ctx.lineTo(-10, -12); ctx.lineTo(-6, -2); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(6, -6); ctx.lineTo(10, -12); ctx.lineTo(6, -2); ctx.closePath(); ctx.fill();
   ctx.restore();
 }
 
@@ -598,14 +826,24 @@ function spawnZombie() {
   var x = Math.random() * W;
   var special = Math.random() < 0.15;
   var hp = Math.round((special ? 3 : 1) * st.zombieHpMult);
-  st.zombies.push({ x: x, y: -30, hp: hp, maxHp: hp, speed: 1.2 + Math.random() * 0.8 + (st.round - 1) * 0.15, type: special ? 'special' : 'normal' });
+  var zHp = Math.round((special ? 3 : 1) * st.zombieHpMult);
+  var zDmg = special ? (10 + Math.floor(Math.random() * 16)) : 1;
+  st.zombies.push({ x: x, y: -30, hp: zHp, maxHp: zHp, dmg: zDmg, speed: 1.2 + Math.random() * 0.8 + (st.round - 1) * 0.15, type: special ? 'special' : 'normal', swerve: (Math.random() - 0.5) * 0.04, swerveT: Math.random() * Math.PI * 2 });
 }
 
 function spawnBoss() {
   var st = gameState;
-  var hp = Math.round(40 * st.zombieHpMult);
-  st.bosses.push({ x: W / 2 + (Math.random() - 0.5) * W * 0.4, y: -60, hp: hp, maxHp: hp, speed: 0.7 + (st.round - 1) * 0.1, type: 'boss' });
+  var hp = 100 * Math.pow(2, st.round - 1);
+  st.bosses.push({ x: W / 2 + (Math.random() - 0.5) * W * 0.3, y: -90, hp: hp, maxHp: hp, speed: 0.5 + (st.round - 1) * 0.08, type: 'boss', immune: true });
   st.kingSpawned = true;
+}
+
+function spawnUpgradeZombie() {
+  var st = gameState;
+  var hp = 10000 * st.round;
+  st.zombies.push({ x: W * 0.5, y: -40, hp: hp, maxHp: hp, dmg: 5, speed: 0.6, type: 'upgrade', swerve: 0, swerveT: 0 });
+  st.upgradeZombieSpawned = true;
+  addFloat(W/2, H*0.3, 'UPGRADE ZOMBIE!', '#ff00ff', true);
 }
 
 function spawnParticles(x, y, color, count) {
@@ -624,19 +862,66 @@ function updateAirBtn() {
   var btn = document.getElementById('airBtn');
   if (!gameState || gameState.gameOver) { btn.style.display = 'none'; return; }
   btn.style.display = 'block';
+  var lbl = document.getElementById('airBtnLabel');
   if (gameState.airstrikes > 0) {
     btn.className = 'ready';
-    btn.textContent = 'STRIKE x' + gameState.airstrikes;
+    if (lbl) lbl.textContent = 'x' + gameState.airstrikes;
   } else {
     btn.className = 'locked';
     var needed = gameState.airstrikeThreshold - gameState.score;
-    btn.textContent = 'STRIKE ' + (needed >= 1000 ? Math.ceil(needed / 1000) + 'k' : needed);
+    if (lbl) lbl.textContent = (needed >= 1000 ? Math.ceil(needed/1000)+'k' : needed);
   }
 }
 
 /* =========================================================
    AIRSTRIKE
 ========================================================= */
+function explodeCopCar(cc) {
+  var st = gameState;
+  var blastR = 160;
+  spawnParticles(cc.x, cc.y, '#ff6600', 30);
+  spawnParticles(cc.x, cc.y, '#ffff00', 20);
+  addFloat(cc.x, cc.y - 20, 'BOOM! +1000', '#ff6600', true);
+  st.score += 1000;
+  // Kill/damage zombies in blast radius
+  st.zombies = st.zombies.filter(function(z) {
+    var dx = z.x - cc.x, dy = z.y - cc.y;
+    if (Math.sqrt(dx*dx + dy*dy) < blastR) {
+      spawnParticles(z.x, z.y, '#ff4400', 6);
+      st.kills++; st.score += 100;
+      return false;
+    }
+    return true;
+  });
+  st.bosses.forEach(function(b) {
+    var dx = b.x - cc.x, dy = b.y - cc.y;
+    if (Math.sqrt(dx*dx + dy*dy) < blastR) b.hp -= 500;
+  });
+  sfxCarHornStop(cc);
+  sfxCarExplode();
+  // Stay at location, deal 25 dmg/s to nearby zombies, then fade out
+  cc.vx = 0; cc.vy = 0;
+  cc.exploded = true;
+  cc.fadeAlpha = 1.0;
+  cc.burnTimer = 180; // 3 seconds of burn damage
+}
+
+function launchCopCar(cc) {
+  if (cc.launched || !cc.active) return;
+  cc.launched = true;
+  // Diagonal toward center of screen, stop there
+  var cx = W / 2, cy = H / 2;
+  var dx = cx - cc.x, dy = cy - cc.y;
+  var len = Math.sqrt(dx*dx + dy*dy);
+  cc.vx = (dx / len) * 5;
+  cc.vy = (dy / len) * 5;
+  cc.targetX = cx;
+  cc.targetY = cy;
+  addFloat(cc.x, cc.y - 20, 'CAR LAUNCHED!', '#ff4400', true);
+  sfxAirstrike();
+  sfxCarHornStart(cc);
+}
+
 function fireAirstrike() {
   var st = gameState;
   if (!st || st.airstrikes <= 0 || st.airPlane) return;
@@ -683,24 +968,155 @@ function update() {
   if (st.kingDefeated) {
     st.roundClearTimer--;
     if (st.roundClearTimer <= 0) {
-      var prev = { round: st.round, score: st.score, kills: st.kills, bossKills: st.bossKills, soldiers: st.soldiers, airstrikes: st.airstrikes };
+      var prev = { round: st.round, score: st.score, kills: st.kills, bossKills: st.bossKills,
+        soldiers: Math.min(st.soldiers, 200), airstrikes: st.airstrikes,
+        snipers: st.snipers, nextVehicleScore: st.nextVehicleScore };
       gameState = makeState(prev);
       return;
     }
   }
+  // Spawn upgrade zombie at 30s if not yet spawned
+  if (st.elapsed >= 30 && !st.upgradeZombieSpawned) spawnUpgradeZombie();
 
-  // Reinforcements at 60s
-  if (st.elapsed >= 60 && !st.reinforcementsAt60) {
-    st.reinforcementsAt60 = true;
-    st.soldiers += 10;
-    addFloat(W / 2, H / 2, '+10 REINFORCEMENTS!', '#44ff88', true);
-    sfxPickup();
-  }
+  // Reinforce: soldier pickups increase after 60s (handled in pickup logic)
 
   // Weapon timer
   if (st.currentWeapon !== 'bullet' && st.weaponTimer > 0) {
     st.weaponTimer--;
     if (st.weaponTimer <= 0) st.currentWeapon = 'bullet';
+  }
+
+  // Position cop cars and snipers relative to screen size
+  var sniperY = H * 0.92 - 20;
+  var copCarY  = H * 0.80;
+  if (st.snipers[0]) { st.snipers[0].x = 48;     st.snipers[0].y = sniperY; }
+  if (st.snipers[1]) { st.snipers[1].x = W - 48;  st.snipers[1].y = sniperY; }
+  if (st.copCars[0] && !st.copCars[0].launched) { st.copCars[0].x = 36;     st.copCars[0].y = copCarY; }
+  if (st.copCars[1] && !st.copCars[1].launched) { st.copCars[1].x = W - 36; st.copCars[1].y = copCarY; }
+
+  // Sniper fire — every 5s (300 frames), instant headshot kill on closest zombie
+  for (var sni = 0; sni < st.snipers.length; sni++) {
+    var sn = st.snipers[sni];
+    if (!sn.alive) continue;
+    var fireRate = Math.max(60, 300 - (sn.level - 1) * 40);
+    sn.fireTimer++;
+    if (sn.fireTimer >= fireRate) {
+      sn.fireTimer = 0;
+      var all = st.zombies.concat(st.bosses);
+      var closest = null, bestDist = 99999;
+      for (var zi2 = 0; zi2 < all.length; zi2++) {
+        var zz = all[zi2];
+        var d = Math.abs(zz.x - sn.x) + Math.abs(zz.y - sn.y);
+        if (d < bestDist) { bestDist = d; closest = zz; }
+      }
+      if (closest) {
+        if (closest.type === 'boss' && closest.y < H * 0.20) { /* immune */ }
+        else {
+          closest.hp = 0;
+          spawnParticles(closest.x, closest.y - 20, '#ff0000', 8);
+          addFloat(closest.x, closest.y - 20, 'HEADSHOT!', '#ff4400', false);
+          st.bullets.push({ x: sn.x, y: sn.y, vy: -18, vx: (closest.x - sn.x) * 0.04, weapon: 'sniper', age: 0 });
+          sfxShoot();
+        }
+      }
+    }
+  }
+  // Sniper perch destruction checked in zombie loop
+
+  // Upgrade zombie kill check — handled in zKill loop below
+
+  // Cop car flash timer
+  st.copCars.forEach(function(cc) { cc.flashTimer = (cc.flashTimer + 1) % 30; });
+
+  // Cop car update
+  for (var cci = 0; cci < st.copCars.length; cci++) {
+    var cc = st.copCars[cci];
+    if (!cc.active) continue;
+
+    // Burn phase — stay put, damage nearby zombies, fade out
+    if (cc.exploded) {
+      if (cc.burnDmgDealt === undefined) cc.burnDmgDealt = 0;
+      // All zombies sprint toward exploded cop car
+      for (var cazi = 0; cazi < st.zombies.length; cazi++) {
+        var caz = st.zombies[cazi];
+        var cadx = cc.x - caz.x, cady = cc.y - caz.y;
+        var cadist = Math.sqrt(cadx*cadx + cady*cady);
+        if (cadist > 1) { caz.x += (cadx/cadist)*caz.speed*1.5; caz.y += (cady/cadist)*caz.speed*1.5; }
+      }
+      // Damage zombies that touch it
+      var ctouched = false;
+      for (var cbzi = 0; cbzi < st.zombies.length; cbzi++) {
+        var cbz = st.zombies[cbzi];
+        var cbdx = cbz.x - cc.x, cbdy = cbz.y - cc.y;
+        if (Math.sqrt(cbdx*cbdx + cbdy*cbdy) < 60) {
+          cbz.hp -= 25; cc.burnDmgDealt += 25;
+          spawnParticles(cbz.x, cbz.y, '#ff6600', 4);
+          ctouched = true;
+        }
+      }
+      st.bosses.forEach(function(b) {
+        var bdx = b.x - cc.x, bdy = b.y - cc.y;
+        if (Math.sqrt(bdx*bdx+bdy*bdy) < 60) { b.hp -= 25; cc.burnDmgDealt += 25; ctouched = true; }
+      });
+      if (st.frame % 6 === 0) {
+        spawnParticles(cc.x + (Math.random()-0.5)*24, cc.y - 8, '#ff4400', 3);
+      }
+      if (ctouched && cc.burnDmgDealt >= 25) {
+        cc.fadeAlpha = (cc.fadeAlpha || 1) - 0.04;
+        if (cc.fadeAlpha <= 0) cc.active = false;
+      }
+      continue;
+    }
+
+    // Auto-launch if zombie touches it
+    if (!cc.launched) {
+      for (var zti = 0; zti < st.zombies.length; zti++) {
+        var zt = st.zombies[zti];
+        if (Math.abs(zt.x - cc.x) < 50 && Math.abs(zt.y - cc.y) < 40) {
+          launchCopCar(cc); break;
+        }
+      }
+    }
+
+    if (!cc.launched) continue;
+
+    // Move toward target center
+    if (cc.targetX !== undefined) {
+      var remX = cc.targetX - cc.x, remY = cc.targetY - cc.y;
+      if (Math.abs(remX) < 6 && Math.abs(remY) < 6) {
+        cc.vx = 0; cc.vy = 0;
+        cc.x = cc.targetX; cc.y = cc.targetY;
+      }
+    }
+    cc.x += cc.vx; cc.y += cc.vy;
+
+    // Bullet hits — only once stopped at center (invincible while moving)
+    var atCenter = cc.vx === 0 && cc.vy === 0 && cc.launched;
+    if (atCenter) {
+      var copHitIdx = -1;
+      for (var cbi = 0; cbi < st.bullets.length; cbi++) {
+        var cb = st.bullets[cbi];
+        if (cb.weapon === 'sniper') continue;
+        var cdx = cb.x - cc.x, cdy = cb.y - cc.y;
+        if (Math.abs(cdx) < 28 && Math.abs(cdy) < 16) {
+          cc.hp -= 17; copHitIdx = cbi;
+          spawnParticles(cc.x, cc.y, '#ff8800', 4);
+          break;
+        }
+      }
+      if (copHitIdx >= 0) st.bullets.splice(copHitIdx, 1);
+      if (cc.hp <= 0) explodeCopCar(cc);
+    }
+  }
+
+  // 50k vehicle bonus
+  if (st.score >= st.nextVehicleScore) {
+    st.nextVehicleScore += 50000;
+    var types = ['regular', 'police', 'ambulance'];
+    var fromLeft = Math.random() < 0.5;
+    st.cars.push({ x: fromLeft ? -60 : W + 60, y: H * 0.60 + Math.random() * (H * 0.20),
+      speed: fromLeft ? 2.5 : -2.5, hp: 50, maxHp: 50, type: types[Math.floor(Math.random() * types.length)] });
+    addFloat(W/2, H*0.4, 'BONUS VEHICLE!', '#ffaa00', true);
   }
 
   // Airstrike award
@@ -711,22 +1127,31 @@ function update() {
     updateAirBtn();
   }
 
-  // Spawn zombies
-  var zombieRate = Math.max(400, 1600 - st.round * 80);
-  if (now - st.lastZombieTime > zombieRate && !st.kingDefeated) {
-    spawnZombie(); st.lastZombieTime = now;
+  // Spawn zombies — exponential batch every 2s: 1, 2, 4, 8... capped at 64
+  if (now - st.lastZombieTime > 2000 && !st.kingDefeated) {
+    var wave = Math.floor(st.elapsed / 2);
+    var count = Math.min(Math.pow(2, wave), 64);
+    // Scale down slightly per round to keep it playable
+    count = Math.max(1, Math.round(count / Math.max(1, st.round * 0.5)));
+    for (var zw = 0; zw < count; zw++) spawnZombie();
+    st.lastZombieTime = now;
   }
 
   // Spawn boss every ~60s
-  if (now - st.lastBossTime > 60000 && !st.kingSpawned && !st.kingDefeated) {
+  if (st.elapsed >= 60 && !st.kingSpawned && !st.kingDefeated) {
     spawnBoss(); st.lastBossTime = now;
+  }
+  // After boss killed, next boss after another 60s
+  if (st.kingDefeated && now - st.lastBossTime > 60000) {
+    st.kingDefeated = false; st.kingSpawned = false;
   }
 
   // Spawn soldier pickup
   if (now - st.lastSoldierTime > 5000) {
     var sx = 40 + Math.random() * (W - 80);
+    var addAmt = st.elapsed < 60 ? 1 : 10;
     st.soldierPickups = st.soldierPickups || [];
-    st.soldierPickups.push({ x: sx, y: -20 });
+    st.soldierPickups.push({ x: sx, y: -20, amt: addAmt });
     st.lastSoldierTime = now;
   }
 
@@ -745,11 +1170,13 @@ function update() {
   }
 
   // Spawn car
-  if (now - st.lastCarTime > 12000) {
+  if (now - st.lastCarTime > 30000) {
     var types = ['regular', 'police', 'ambulance'];
     var fromLeft = Math.random() < 0.5;
     var carHp = 50;
-    st.cars.push({ x: fromLeft ? -60 : W + 60, y: H * 0.55 + (Math.random() - 0.5) * 80, speed: fromLeft ? 2.5 : -2.5, hp: carHp, maxHp: carHp, type: types[Math.floor(Math.random() * types.length)] });
+    var newCar = { x: fromLeft ? -60 : W + 60, y: H * 0.60 + Math.random() * (H * 0.20), speed: fromLeft ? 2.5 : -2.5, hp: carHp, maxHp: carHp, type: types[Math.floor(Math.random() * types.length)] };
+    sfxCarHornStart(newCar);
+    st.cars.push(newCar);
     st.lastCarTime = now;
   }
 
@@ -762,17 +1189,19 @@ function update() {
     var targets = st.zombies.concat(st.bosses).filter(function(z) {
       return Math.abs(z.x - st.squadX) < wc.range * 2 && z.y > 0;
     });
-    if (st.currentWeapon === 'laser' && targets.length > 0) {
-      // Laser beam — instant hit closest
-      targets.sort(function(a, b) { return a.y - b.y; });
-      var lt = targets[0];
-      lt.hp -= wc.attack * (st.soldiers * 0.3 + 1);
+    if (st.currentWeapon === 'laser') {
+      // Every soldier fires a laser straight up — hits first zombie in its column
       sfxLaser();
-    } else {
       var spread = Math.min(st.soldiers, 12);
       for (var i = 0; i < spread; i++) {
-        var bx = st.squadX + (i - spread / 2) * 12 + (Math.random() - 0.5) * 8;
-        st.bullets.push({ x: bx, y: squadY - 10, vy: -(8 + Math.random() * 2), vx: (Math.random() - 0.5) * 1.5, weapon: st.currentWeapon });
+        var bx = st.squadX + (i - spread / 2) * 12;
+        st.bullets.push({ x: bx, y: squadY - 10, vy: -18, vx: 0, weapon: 'laser', age: 0 });
+      }
+    } else {
+      var spread2 = Math.min(st.soldiers, 12);
+      for (var i = 0; i < spread2; i++) {
+        var bx = st.squadX + (i - spread2 / 2) * 12 + (Math.random() - 0.5) * 8;
+        st.bullets.push({ x: bx, y: squadY - 10, vy: -(8 + Math.random() * 2), vx: (Math.random() - 0.5) * 1.5, weapon: st.currentWeapon, age: 0 });
         if (i === 0) sfxShoot();
       }
     }
@@ -781,6 +1210,8 @@ function update() {
   // Move bullets
   st.bullets = st.bullets.filter(function(b) {
     b.x += b.vx; b.y += b.vy;
+    if (b.age !== undefined) b.age++;
+    if (b.weapon === 'flamethrower' && b.y < H * 0.5) return false;
     return b.y > -20 && b.y < H + 20 && b.x > -20 && b.x < W + 20;
   });
 
@@ -789,31 +1220,54 @@ function update() {
   var zKill = [];
   st.zombies.forEach(function(z, zi) {
     z.y += z.speed;
+    z.swerveT = (z.swerveT || 0) + 0.04;
+    z.x += Math.sin(z.swerveT) * 1.2;
+    z.x = Math.max(0, Math.min(W, z.x));
     // Bullet hits
     st.bullets.forEach(function(b, bi) {
       if (bHits.has(bi)) return;
+      if (b.weapon === 'sniper') return; // sniper kills handled separately
       var dx = b.x - z.x, dy = b.y - z.y;
       if (Math.abs(dx) < 16 && Math.abs(dy) < 20) {
-        var dmg = WEAPONS[b.weapon || 'bullet'].attack * (1 + st.soldiers * 0.05);
+        var wKey = WEAPONS[b.weapon] ? b.weapon : 'bullet';
+        var dmg = WEAPONS[wKey].attack * (1 + st.soldiers * 0.05);
         z.hp -= dmg;
         bHits.add(bi);
         spawnParticles(z.x, z.y, '#88ff44', 3);
       }
     });
     if (z.hp <= 0) { zKill.push(zi); return; }
+    // Reached sniper perch
+    for (var sni2 = 0; sni2 < st.snipers.length; sni2++) {
+      var snp = st.snipers[sni2];
+      if (snp.alive && Math.abs(z.x - snp.x) < 35 && Math.abs(z.y - snp.y) < 35) {
+        snp.alive = false;
+        spawnParticles(snp.x, snp.y, '#ff4400', 14);
+        addFloat(snp.x, snp.y - 20, 'PERCH DOWN!', '#ff2200', true);
+      }
+    }
     // Reached squad
     if (z.y >= squadY) {
       z.y = -30; z.x = Math.random() * W;
-      st.soldiers = Math.max(0, st.soldiers - 1);
+      var dmgAmt = z.dmg || 1;
+      st.soldiers = Math.max(0, st.soldiers - dmgAmt);
+      st.soldiers = Math.min(st.soldiers, 200);
       spawnParticles(st.squadX, squadY, '#ff4444', 8);
-      addFloat(st.squadX, squadY - 20, '-1 SOLDIER', '#ff4444', false);
+      addFloat(st.squadX, squadY - 20, '-' + dmgAmt + ' SOLDIER' + (dmgAmt>1?'S':''), '#ff4444', false);
       if (st.soldiers <= 0) { triggerGameOver(); return; }
     }
   });
   st.bullets = st.bullets.filter(function(_, i) { return !bHits.has(i); });
   zKill.reverse().forEach(function(zi) {
     var z = st.zombies[zi];
-    st.score += z.type === 'special' ? 150 : 100;
+    if (z.type === 'upgrade') {
+      // Upgrade a sniper perch
+      var deadSn = null;
+      for (var si = 0; si < st.snipers.length; si++) { if (st.snipers[si].alive) { deadSn = st.snipers[si]; break; } }
+      if (deadSn) { deadSn.level++; addFloat(deadSn.x, deadSn.y - 30, 'SNIPER LVL ' + deadSn.level + '!', '#ff00ff', true); }
+      st.upgradeZombieSpawned = false;
+    }
+    st.score += z.type === 'upgrade' ? 5000 : z.type === 'special' ? 150 : 100;
     st.kills++;
     spawnParticles(z.x, z.y, '#44ff88', 6);
     addFloat(z.x, z.y, z.type === 'special' ? '+150' : '+100', '#ffe044', false);
@@ -827,12 +1281,20 @@ function update() {
     boss.y += boss.speed;
     st.bullets.forEach(function(b, bui) {
       if (bHits.has('bo' + bui)) return;
+      if (b.weapon === 'sniper') return;
       var dx = b.x - boss.x, dy = b.y - boss.y;
-      if (Math.abs(dx) < 28 && Math.abs(dy) < 36) {
-        var dmg = WEAPONS[b.weapon || 'bullet'].attack * (1 + st.soldiers * 0.05);
-        boss.hp -= dmg;
-        bHits.add('bo' + bui);
-        spawnParticles(boss.x, boss.y, '#ff4444', 2);
+      var immuneZone = H * 0.20;
+      if (Math.abs(dx) < 42 && Math.abs(dy) < 54) {
+        if (boss.y > immuneZone) {
+          var wKey2 = WEAPONS[b.weapon] ? b.weapon : 'bullet';
+          var dmg = WEAPONS[wKey2].attack * (1 + st.soldiers * 0.05);
+          boss.hp -= dmg;
+          bHits.add('bo' + bui);
+          spawnParticles(boss.x, boss.y, '#ff4444', 2);
+        } else {
+          bHits.add('bo' + bui);
+          spawnParticles(boss.x, boss.y, '#888888', 2);
+        }
       }
     });
     if (boss.hp <= 0) { bossKill.push(bi); return; }
@@ -864,9 +1326,9 @@ function update() {
     p.y += pickupSpeed;
     var dx = p.x - st.squadX, dy = p.y - squadY;
     if (Math.abs(dx) < 30 && Math.abs(dy) < 30) {
-      var add = 3 + Math.floor(Math.random() * 4);
+      var add = p.amt || 1;
       st.soldiers += add;
-      addFloat(p.x, p.y, '+' + add + ' SOLDIER' + (add > 1 ? 'S' : ''), '#44ff88', false);
+      addFloat(p.x, p.y, '+' + add + ' SOLDIER' + (add > 1 ? 'S' : ''), add >= 10 ? '#4488ff' : '#44ff88', false);
       sfxPickup();
       return false;
     }
@@ -901,6 +1363,58 @@ function update() {
 
   // Cars
   st.cars = st.cars.filter(function(car) {
+    // Burning phase — stopped, dealing damage, attracting zombies
+    if (car.burning) {
+      // Track total damage dealt — only extinguish once 25+ dmg has been dealt AND a zombie touched it
+      if (car.burnDmgDealt === undefined) car.burnDmgDealt = 0;
+
+      // Every frame — ALL zombies sprint hard toward this car
+      for (var azi = 0; azi < st.zombies.length; azi++) {
+        var az = st.zombies[azi];
+        var adx = car.x - az.x, ady = car.y - az.y;
+        var adist = Math.sqrt(adx*adx + ady*ady);
+        if (adist > 1) {
+          // Sprint at 3x normal speed toward car
+          az.x += (adx / adist) * az.speed * 1.5;
+          az.y += (ady / adist) * az.speed * 1.5;
+        }
+      }
+
+      // Deal 25 dmg to zombies that touch the car (within 50px), track damage
+      var touched = false;
+      for (var bci = 0; bci < st.zombies.length; bci++) {
+        var bz = st.zombies[bci];
+        var bdx = bz.x - car.x, bdy = bz.y - car.y;
+        if (Math.sqrt(bdx*bdx + bdy*bdy) < 50) {
+          bz.hp -= 25;
+          car.burnDmgDealt += 25;
+          spawnParticles(bz.x, bz.y, '#ff6600', 4);
+          touched = true;
+        }
+      }
+      st.bosses.forEach(function(b) {
+        var bdx = b.x - car.x, bdy = b.y - car.y;
+        if (Math.sqrt(bdx*bdx + bdy*bdy) < 50) {
+          b.hp -= 25; car.burnDmgDealt += 25;
+          touched = true;
+        }
+      });
+
+      // Emit fire particles every frame
+      if (st.frame % 6 === 0) {
+        spawnParticles(car.x + (Math.random()-0.5)*24, car.y - 8, '#ff4400', 3);
+        spawnParticles(car.x + (Math.random()-0.5)*16, car.y - 14, '#ff8800', 2);
+      }
+
+      // Extinguish only once >= 25 total dmg dealt AND a zombie has touched it
+      if (touched && car.burnDmgDealt >= 25) {
+        car.fadeAlpha = (car.fadeAlpha || 1) - 0.04;
+        if (car.fadeAlpha <= 0) { sfxCarHornStop(car); return false; } // remove
+      }
+
+      return true; // keep burning until condition met
+    }
+    // Moving
     car.x += car.speed;
     // Bullet hits
     st.bullets.forEach(function(b, bi) {
@@ -911,12 +1425,22 @@ function update() {
       }
     });
     if (car.hp <= 0) {
+      // Start burning — stay in place
+      sfxCarHornStop(car);
+      sfxCarExplode();
+      car.burning = true;
+      car.burnDmgDealt = 0;
+      car.fadeAlpha = 1.0;
+      car.speed = 0;
       spawnParticles(car.x, car.y, '#ff6600', 20);
+      spawnParticles(car.x, car.y, '#ffff00', 10);
       addFloat(car.x, car.y, '+500 BOOM!', '#ff6600', true);
       st.score += 500;
-      return false;
+      return true; // keep it — it's now burning
     }
-    return car.x > -100 && car.x < W + 100;
+    var onScreen = car.x > -100 && car.x < W + 100;
+    if (!onScreen) sfxCarHornStop(car);
+    return onScreen;
   });
 
   // Airplane + bombs
@@ -927,10 +1451,12 @@ function update() {
     }
     if (st.airPlane.x > W + 60) st.airPlane = null;
   }
+  var fireY = H * 0.65; // 35% from bottom
   st.bombs = st.bombs.filter(function(b) {
     b.y += b.vy; b.vy += 0.15;
-    var allTargets = st.zombies.concat(st.bosses);
+    // Hit zombie
     var hit = false;
+    var allTargets = st.zombies.concat(st.bosses);
     allTargets.forEach(function(t) {
       var dx = b.x - t.x, dy = b.y - t.y;
       if (Math.abs(dx) < 30 && Math.abs(dy) < 30) {
@@ -939,11 +1465,37 @@ function update() {
         hit = true;
       }
     });
-    if (b.y > H) {
-      spawnParticles(b.x, b.y, '#ff4400', 12);
+    // Stop at fire line level — spawn fire
+    if (b.y >= fireY) {
+      // Staggered fire patch around impact point
+      for (var fi = 0; fi < 5; fi++) {
+        st.fireLines.push({
+          x: b.x + (Math.random() - 0.5) * 60,
+          y: fireY + (Math.random() - 0.5) * 18,
+          life: 1.0,
+          decay: 0.004 + Math.random() * 0.003,
+          r: 8 + Math.random() * 10
+        });
+      }
+      sfxAirstrikeBomb();
+      spawnParticles(b.x, fireY, '#ff4400', 10);
       return false;
     }
     return !hit;
+  });
+
+  // Fire lines — damage zombies, fade out
+  st.fireLines = st.fireLines.filter(function(fl) {
+    fl.life -= fl.decay;
+    // Damage any zombie standing in fire
+    for (var fzi = 0; fzi < st.zombies.length; fzi++) {
+      var fz = st.zombies[fzi];
+      var fdx = fz.x - fl.x, fdy = fz.y - fl.y;
+      if (Math.sqrt(fdx*fdx + fdy*fdy) < fl.r + 10) {
+        fz.hp -= 0.4;
+      }
+    }
+    return fl.life > 0;
   });
 
   // Lightning strike effects
@@ -985,57 +1537,123 @@ function draw() {
   ctx.fillStyle = '#2a3a2a';
   ctx.fillRect(0, squadY + 18, W, 4);
 
+  // Sniper perches
+  st.snipers.forEach(function(sn) {
+    if (!sn.alive) return;
+    ctx.save(); ctx.translate(sn.x, sn.y);
+    // Wooden platform
+    ctx.fillStyle = '#8B6914';
+    ctx.fillRect(-18, -8, 36, 16);
+    ctx.fillStyle = '#a07820';
+    ctx.fillRect(-16, -6, 32, 12);
+    // Support posts
+    ctx.fillStyle = '#6B4F10';
+    ctx.fillRect(-16, 8, 6, 20); ctx.fillRect(10, 8, 6, 20);
+    // Soldier on perch
+    ctx.fillStyle = '#5c7a3e'; ctx.fillRect(-5, -20, 10, 14);
+    ctx.fillStyle = '#f4c68a'; ctx.beginPath(); ctx.arc(0, -26, 6, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#3d5228'; ctx.fillRect(-6, -30, 12, 5);
+    // Gun barrel pointing up
+    ctx.fillStyle = '#333'; ctx.fillRect(-1, -38, 2, 14);
+    // Level badge
+    ctx.fillStyle = '#ff00ff'; ctx.font = 'bold 8px Arial'; ctx.textAlign = 'center';
+    ctx.fillText('LVL' + sn.level, 0, 28);
+    ctx.restore();
+  });
+
+  // Cop cars (fixed at bottom)
+  st.copCars.forEach(function(cc) {
+    if (!cc.active) return;
+    ctx.save();
+    ctx.globalAlpha = cc.exploded ? (cc.fadeAlpha || 0) : 1;
+    ctx.translate(cc.x, cc.y);
+    // Rotate to face up
+    ctx.rotate(-Math.PI / 2);
+    // Body
+    ctx.fillStyle = '#002299';
+    ctx.beginPath(); rr(-20, -12, 40, 24, 5); ctx.fill();
+    // Windows
+    ctx.fillStyle = 'rgba(150,220,255,0.7)';
+    ctx.fillRect(-14, -9, 10, 8); ctx.fillRect(4, -9, 10, 8);
+    // Flashing lights
+    var fl = cc.flashTimer < 15;
+    ctx.fillStyle = fl ? '#ff3333' : '#3333ff';
+    ctx.fillRect(-7, -15, 6, 5);
+    ctx.fillStyle = fl ? '#3333ff' : '#ff3333';
+    ctx.fillRect(1, -15, 6, 5);
+    ctx.restore();
+    // HP bar drawn outside rotation
+    if (cc.launched) {
+      var bW = 36, bf = (cc.hp / cc.maxHp) * bW;
+      ctx.fillStyle = '#333'; ctx.fillRect(cc.x - 18, cc.y + 18, bW, 4);
+      ctx.fillStyle = '#ff8800'; ctx.fillRect(cc.x - 18, cc.y + 18, Math.max(0, bf), 4);
+    }
+    // TAP label when not launched
+    if (!cc.launched && !cc.exploded) {
+      ctx.save(); ctx.fillStyle = 'rgba(255,200,0,0.9)'; ctx.font = 'bold 9px Arial';
+      ctx.textAlign = 'center'; ctx.fillText('TAP', cc.x, cc.y + 30); ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  });
+
+
   // Cars
   st.cars.forEach(drawCar);
 
   // Pickups
-  (st.soldierPickups || []).forEach(function(p) { drawPickup(p.x, p.y, 'SOLDIER', '#44ff88'); });
+  (st.soldierPickups || []).forEach(function(p) {
+    var isLarge = (p.amt || 1) >= 10;
+    drawPickup(p.x, p.y, '+' + (p.amt || 1), isLarge ? '#4488ff' : '#44ff88', 'circle');
+  });
   st.weaponPickups.forEach(function(p) {
     var wc = WEAPONS[p.weapon];
-    drawPickup(p.x, p.y, wc.name.slice(0, 2).toUpperCase(), wc.color);
+    var wShape = p.weapon === 'flamethrower' ? 'flame' :
+                 p.weapon === 'laser'        ? 'star'  :
+                 p.weapon === 'machinegun'   ? 'diamond' : 'rect';
+    var wLabel = p.weapon === 'flamethrower' ? 'FIRE' :
+                 p.weapon === 'laser'        ? 'LAZR' :
+                 p.weapon === 'machinegun'   ? 'MG'   : 'GUN';
+    drawPickup(p.x, p.y, wLabel, wc.color, wShape);
   });
-  st.lightningPickups.forEach(function(p) { drawPickup(p.x, p.y, 'ZAP', '#ffff44'); });
+  st.lightningPickups.forEach(function(p) { drawPickup(p.x, p.y, 'ZAP', '#ffff44', 'bolt'); });
 
   // Bullets
+    // Bullets
   st.bullets.forEach(drawBullet);
 
-  // Laser beam
-  if (st.currentWeapon === 'laser') {
-    var targets = st.zombies.concat(st.bosses).filter(function(z) { return z.y > 0; });
-    if (targets.length > 0) {
-      targets.sort(function(a, b) { return a.y - b.y; });
-      var lt = targets[0];
-      ctx.save();
-      ctx.strokeStyle = WEAPONS.laser.color;
-      ctx.shadowColor = WEAPONS.laser.glow;
-      ctx.shadowBlur = 16;
-      ctx.lineWidth = 3;
-      ctx.globalAlpha = 0.7 + Math.random() * 0.3;
-      ctx.beginPath();
-      ctx.moveTo(st.squadX, squadY - 10);
-      ctx.lineTo(lt.x, lt.y);
-      ctx.stroke();
-      ctx.restore();
-    }
-  }
 
-  // Zombies
+    // Zombies
   st.zombies.forEach(function(z) {
     drawZombie(z.x, z.y, 0.85, z.hp, z.maxHp, z.type);
   });
 
   // Bosses
   st.bosses.forEach(function(boss) {
-    drawZombie(boss.x, boss.y, 1.5, boss.hp, boss.maxHp, 'boss');
+    var bImmune = boss.immune && boss.y < H * 0.20;
+    drawZombie(boss.x, boss.y, 3.0, boss.hp, boss.maxHp, 'boss', bImmune);
+    if (bImmune) { ctx.save(); ctx.fillStyle='rgba(180,180,255,0.55)'; ctx.font='bold 10px Arial'; ctx.textAlign='center'; ctx.fillText('IMMUNE', boss.x, boss.y - 110); ctx.restore(); }
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 9px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText(Math.ceil(boss.hp) + '/' + boss.maxHp, boss.x, boss.y - 62);
+    ctx.fillText(Math.ceil(boss.hp) + '/' + boss.maxHp, boss.x, boss.y - 116);
   });
 
   // Airplane + bombs
   if (st.airPlane) drawAirplane(st.airPlane);
   st.bombs.forEach(drawBomb);
+
+  // Fire line patches from airstrike
+  (st.fireLines || []).forEach(function(fl) {
+    ctx.save();
+    ctx.globalAlpha = fl.life * 0.9;
+    // Outer glow
+    ctx.fillStyle = 'rgba(255,80,0,0.5)';
+    ctx.beginPath(); ctx.ellipse(fl.x, fl.y, fl.r * 1.4, fl.r * 0.7, 0, 0, Math.PI*2); ctx.fill();
+    // Inner bright core
+    ctx.fillStyle = fl.life > 0.5 ? '#ffee44' : '#ff6600';
+    ctx.beginPath(); ctx.ellipse(fl.x, fl.y, fl.r * 0.7, fl.r * 0.4, 0, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  });
 
   // Lightning effects
   st.lightningStrikes.forEach(function(ls) {
@@ -1140,10 +1758,19 @@ function startGame(prev) {
    TOUCH / MOUSE INPUT
 ========================================================= */
 canvas.addEventListener('touchstart', function(e) {
-  // Only handle game touches (not title screen — title is handled separately)
   if (!gameState || !gameState.running) return;
   e.preventDefault();
-  dragX = e.touches[0].clientX;
+  var tx = e.touches[0].clientX, ty = e.touches[0].clientY;
+  // Check cop car taps
+  var tapped = false;
+  gameState.copCars.forEach(function(cc) {
+    if (!cc.active || cc.launched) return;
+    if (Math.abs(tx - cc.x) < 50 && Math.abs(ty - cc.y) < 40) {
+      launchCopCar(cc); tapped = true;
+    }
+  });
+  if (!tapped) dragX = tx;
+  else dragX = null;
 }, { passive: false });
 
 canvas.addEventListener('touchmove', function(e) {
@@ -1151,7 +1778,7 @@ canvas.addEventListener('touchmove', function(e) {
   e.preventDefault();
   var x = e.touches[0].clientX;
   if (dragX !== null) gameState.squadX += (x - dragX) * 1.0;
-  gameState.squadX = Math.max(30, Math.min(W - 30, gameState.squadX));
+  gameState.squadX = Math.max(0, Math.min(W, gameState.squadX));
   dragX = x;
 }, { passive: false });
 

@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
+<script async src="https://www.youtube.com/iframe_api"></script>
 <title>Zombie Horde Shooter</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -36,10 +37,75 @@
     cursor:pointer; display:none; min-width:64px; }
   #airBtn.ready { border-color:#ff4400; box-shadow:0 0 12px #ff440088; }
   #airBtn.locked { border-color:#555; color:#888; }
+
+/* ── Music / Cog ─────────────────────────────────────── */
+#cogBtn{position:fixed;bottom:18px;left:18px;z-index:30;pointer-events:auto;
+background:rgba(10,5,20,0.85);border:1px solid rgba(255,107,53,0.5);
+border-radius:50%;width:42px;height:42px;font-size:18px;
+color:rgba(255,107,53,0.8);cursor:pointer;display:flex;
+align-items:center;justify-content:center;
+-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+#cogMenuOverlay{position:fixed;top:0;left:0;width:100%;height:100%;
+background:rgba(0,0,0,0.72);z-index:80;display:none;
+align-items:center;justify-content:center;padding:16px;}
+#cogMenuOverlay.show{display:flex;}
+#cogCard{background:rgba(10,5,20,0.98);border:2px solid rgba(255,107,53,0.4);
+border-radius:14px;padding:22px 24px;max-width:340px;width:100%;position:relative;color:white;}
+#cogCard h2{font-size:11px;letter-spacing:4px;color:#ff6b35;margin-bottom:18px;text-align:center;}
+#closeCog{position:absolute;top:13px;right:15px;background:transparent;border:none;
+color:rgba(255,107,53,0.7);font-size:20px;cursor:pointer;line-height:1;
+-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+.cogSection{margin-bottom:14px;}
+.cogSection label{font-size:8px;letter-spacing:2px;color:rgba(255,107,53,0.7);display:block;margin-bottom:6px;}
+#ytInput{width:100%;background:rgba(0,0,0,0.6);border:1px solid rgba(255,107,53,0.3);
+border-radius:5px;color:#ff8c5a;font-size:9px;padding:7px 9px;
+font-family:‘Arial Black’,Arial,sans-serif;outline:none;margin-bottom:7px;}
+.cogRow{display:flex;gap:7px;margin-bottom:7px;}
+.cogMusicBtn{flex:1;background:transparent;border:1px solid rgba(255,107,53,0.35);
+border-radius:5px;color:rgba(255,107,53,0.85);font-size:9px;letter-spacing:1px;
+padding:8px 4px;cursor:pointer;font-family:‘Arial Black’,Arial,sans-serif;
+-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+.cogMusicBtn:active{background:rgba(255,107,53,0.2);}
+#musicStatus{font-size:8px;color:rgba(255,107,53,0.5);min-height:13px;margin-bottom:8px;}
+.volRow{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.volRow span{font-size:8px;letter-spacing:1px;color:rgba(255,107,53,0.6);min-width:62px;}
+.volSlider{flex:1;-webkit-appearance:none;height:3px;border-radius:2px;
+background:rgba(255,107,53,0.25);outline:none;}
+.volSlider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+border-radius:50%;background:#ff6b35;cursor:pointer;}
+#ytPlayerContainer{position:fixed;left:-220px;bottom:0;width:200px;height:200px;pointer-events:none;}
 </style>
+
 </head>
 <body>
 <canvas id="gameCanvas"></canvas>
+<!-- Cog / Music settings button -->
+<button id="cogBtn">&#9881;</button>
+
+<!-- Music settings overlay -->
+
+<div id="cogMenuOverlay">
+  <div id="cogCard">
+    <button id="closeCog">&#x2715;</button>
+    <h2>SETTINGS</h2>
+    <div class="cogSection">
+      <label>MUSIC — PASTE YOUTUBE LINK OR PLAYLIST</label>
+      <input id="ytInput" type="text" placeholder="https://youtube.com/watch?v=..." value="https://youtu.be/XMcbjp4Sq4M?si=XGPgt48EOnUw4-p-">
+      <div class="cogRow">
+        <button class="cogMusicBtn" id="ytPlay">PLAY</button>
+        <button class="cogMusicBtn" id="ytStop">STOP</button>
+      </div>
+      <div id="musicStatus">No music loaded</div>
+      <div class="volRow"><span>MUSIC VOL</span><input type="range" class="volSlider" id="musicVol" min="0" max="100" value="60"></div>
+      <div class="volRow"><span>SFX VOL</span><input type="range" class="volSlider" id="sfxVol" min="0" max="100" value="60"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden YouTube player -->
+
+<div id="ytPlayerContainer"></div>
+
 <div id="overlay">
   <div id="startScreen">
     <h1>☠ ZOMBIE HORDE</h1>
@@ -74,6 +140,77 @@ c.lineTo(x+r,y+h); c.arcTo(x,y+h,x,y+h-r,r);
 c.lineTo(x,y+r); c.arcTo(x,y,x+r,y,r);
 c.closePath();
 }
+
+// ── MUSIC / YOUTUBE ───────────────────────────────────────────────────
+var ytPlayer = null;
+var ytPendingPlay = false;
+var musicVolume = 0.60;
+var sfxVolume = 0.60;
+var DEFAULT_YT = ‘https://youtu.be/XMcbjp4Sq4M?si=XGPgt48EOnUw4-p-’;
+
+function ytExtract(url){
+try{
+var pl=url.match(/[?&]list=([A-Za-z0-9_-]+)/);
+if(pl) return {type:‘playlist’,id:pl[1]};
+var v=url.match(/(?:v=|youtu.be/|embed/)([A-Za-z0-9_-]{11})/);
+if(v) return {type:‘video’,id:v[1]};
+}catch(e){}
+return null;
+}
+
+function ytPlayUrl(url){
+if(!ytPlayer||!ytPlayer.unMute) return;
+var info=ytExtract(url);
+if(!info){document.getElementById(‘musicStatus’).textContent=‘Invalid URL’;return;}
+if(info.type===‘playlist’){ytPlayer.loadPlaylist({list:info.id,listType:‘playlist’,index:0,shuffle:1});}
+else{ytPlayer.loadVideoById(info.id);}
+ytPlayer.unMute();
+ytPlayer.setVolume(Math.round(musicVolume*100));
+ytPlayer.playVideo();
+document.getElementById(‘musicStatus’).textContent=‘Playing’;
+}
+
+function wireMusicButtons(){
+var cogBtn=document.getElementById(‘cogBtn’);
+var closeCog=document.getElementById(‘closeCog’);
+var overlay=document.getElementById(‘cogMenuOverlay’);
+var ytPlay=document.getElementById(‘ytPlay’);
+var ytStop=document.getElementById(‘ytStop’);
+var musicVol=document.getElementById(‘musicVol’);
+var sfxVolEl=document.getElementById(‘sfxVol’);
+
+function openCog(e){e.stopPropagation();overlay.classList.add(‘show’);}
+function closeCogFn(){overlay.classList.remove(‘show’);}
+
+cogBtn.addEventListener(‘click’, openCog);
+cogBtn.addEventListener(‘touchend’, function(e){e.preventDefault();e.stopPropagation();openCog(e);});
+closeCog.addEventListener(‘click’, closeCogFn);
+closeCog.addEventListener(‘touchend’, function(e){e.preventDefault();closeCogFn();});
+overlay.addEventListener(‘click’, function(e){if(e.target===this)closeCogFn();});
+
+ytPlay.addEventListener(‘click’, function(){
+var url=document.getElementById(‘ytInput’).value.trim()||DEFAULT_YT;
+if(!url){document.getElementById(‘musicStatus’).textContent=‘Paste a YouTube link above’;return;}
+if(ytPlayer&&ytPlayer.unMute){ytPlayUrl(url);}
+else{ytPendingPlay=true;}
+});
+ytPlay.addEventListener(‘touchend’, function(e){e.preventDefault();ytPlay.click();});
+
+ytStop.addEventListener(‘click’, function(){
+if(ytPlayer&&ytPlayer.pauseVideo){ytPlayer.pauseVideo();ytPlayer.mute();}
+document.getElementById(‘musicStatus’).textContent=‘Stopped’;
+});
+ytStop.addEventListener(‘touchend’, function(e){e.preventDefault();ytStop.click();});
+
+musicVol.addEventListener(‘input’, function(){
+musicVolume=this.value/100;
+if(ytPlayer&&ytPlayer.setVolume) ytPlayer.setVolume(Math.round(musicVolume*100));
+});
+sfxVolEl.addEventListener(‘input’, function(){sfxVolume=this.value/100;});
+}
+
+if(document.readyState===‘loading’) document.addEventListener(‘DOMContentLoaded’, wireMusicButtons);
+else wireMusicButtons();
 
 const canvas = document.getElementById(‘gameCanvas’);
 const ctx = canvas.getContext(‘2d’);
@@ -1118,6 +1255,15 @@ mouseX=canvas.width/2;
 if(animFrame) cancelAnimationFrame(animFrame);
 initState(prev||null);
 loop();
+// Start music when game starts
+if(ytPlayer && ytPlayer.unMute){
+ytPlayer.unMute();
+ytPlayer.setVolume(Math.round(musicVolume*100));
+ytPlayer.playVideo();
+document.getElementById(‘musicStatus’).textContent=‘Playing’;
+} else {
+ytPendingPlay = true;
+}
 }
 
 function showGameOver(){
@@ -1125,6 +1271,40 @@ document.getElementById(‘overlay’).style.display=‘flex’;
 document.getElementById(‘gameOverScreen’).style.display=‘block’;
 const m=Math.floor(state.elapsed/60),s=Math.floor(state.elapsed%60);
 document.getElementById(‘finalStats’).innerHTML=` <div class="stat-line">Round: ${state.round}</div> <div class="stat-line">⭐ Score: ${state.score.toLocaleString()}</div> <div class="stat-line">Kills: ${state.kills}</div> <div class="stat-line">Bosses Slain: ${state.bossKills}</div> <div class="stat-line">⏱ Survived: ${m}m ${s}s</div>`;
+}
+</script>
+
+<!-- YouTube IFrame API callback — must be global -->
+
+<script>
+function onYouTubeIframeAPIReady(){
+  var url = document.getElementById('ytInput').value.trim() || DEFAULT_YT;
+  var info = url ? ytExtract(url) : null;
+  var pvars = {autoplay:1, playsinline:1, controls:0, mute:0, origin:window.location.origin};
+  var vidId = undefined;
+  if(info && info.type==='playlist'){
+    pvars.listType='playlist'; pvars.list=info.id; pvars.shuffle=1;
+  } else if(info && info.type==='video'){
+    vidId = info.id; pvars.loop=1; pvars.playlist=info.id;
+  }
+  var cfg = {
+    height:'200', width:'200',
+    playerVars: pvars,
+    events:{
+      onReady: function(e){
+        e.target.setVolume(Math.round(musicVolume*100));
+        e.target.unMute();
+        e.target.playVideo();
+        ytPendingPlay=false;
+        document.getElementById('musicStatus').textContent='Playing';
+      },
+      onStateChange: function(e){
+        if(e.data===YT.PlayerState.ENDED||e.data===YT.PlayerState.UNSTARTED) e.target.playVideo();
+      }
+    }
+  };
+  if(vidId) cfg.videoId = vidId;
+  ytPlayer = new YT.Player('ytPlayerContainer', cfg);
 }
 </script>
 

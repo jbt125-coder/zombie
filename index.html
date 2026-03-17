@@ -144,7 +144,7 @@ border-radius:50%;background:#ff6b35;cursor:pointer;}
   </div>
 </div>
 
-<div id="overlay">
+<div id="overlay" style="display:none;">
   <div id="startScreen">
     <h1>☠ ZOMBIE HORDE</h1>
     <p class="subtitle">
@@ -227,9 +227,11 @@ var stars=[];
 var shine=0;
 var raf;
 
-function resizeTC(){tc.width=window.innerWidth;tc.height=window.innerHeight;}
+function resizeTC(){tc.width=window.innerWidth||screen.width;tc.height=window.innerHeight||screen.height;}
 resizeTC();
 window.addEventListener(‘resize’,resizeTC);
+// Also resize on first rAF in case layout isn’t ready yet
+requestAnimationFrame(function(){ resizeTC(); });
 
 for(var i=0;i<220;i++) stars.push({
 x:Math.random(),y:Math.random(),

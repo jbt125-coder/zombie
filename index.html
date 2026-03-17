@@ -3,110 +3,104 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="mobile-web-app-capable" content="yes">
-<script async src="https://www.youtube.com/iframe_api"></script>
-<title>Zombie Horde Shooter</title>
+<title>ZOMBIE HORDE</title>
+<script src="https://www.youtube.com/iframe_api"></script>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html { height:100%; background:#1a0a2e; }
-  body { background:#1a0a2e; width:100%; height:100%; overflow:hidden;
-    font-family:'Arial Black',Arial,sans-serif;
-    display:flex; align-items:center; justify-content:center; }
-  #gameCanvas { display:block; touch-action:none; pointer-events:none; }
-  #overlay { position:fixed; top:0; left:0; width:100%; height:100%;
-    align-items:center; justify-content:center;
-    z-index:20; }
-  #startScreen,#gameOverScreen {
-    background:rgba(10,5,20,0.95); border:2px solid #ff6b35; border-radius:14px;
-    padding:22px 26px; text-align:center; color:white; width:88vw; max-width:400px; }
-  h1 { color:#ff6b35; font-size:1.7em; text-shadow:0 0 16px #ff6b35; margin-bottom:6px; }
-  h2 { color:#ff4444; font-size:1.5em; margin-bottom:6px; }
-  .subtitle { color:#bbb; font-size:0.76em; margin-bottom:12px; line-height:1.6; }
-  .btn { background:#ff6b35; color:white; border:none; padding:15px 0; font-size:1.05em;
-    font-family:'Arial Black',Arial,sans-serif; border-radius:10px; cursor:pointer;
-    margin-top:10px; width:100%; display:block; -webkit-appearance:none; touch-action:manipulation; }
-  .stat-line { color:#ffcc44; font-size:0.9em; margin:3px 0; }
-  /* Airstrike HUD button */
-  #airBtn { position:fixed; bottom:18px; right:18px; z-index:30;
-    background:rgba(10,5,20,0.88); border:2px solid #ff4400; border-radius:12px;
-    color:white; font-family:'Arial Black',Arial,sans-serif; font-size:0.72em;
-    padding:10px 12px; text-align:center; pointer-events:auto; touch-action:manipulation;
-    cursor:pointer; display:none; min-width:64px; }
-  #airBtn.ready { border-color:#ff4400; box-shadow:0 0 12px #ff440088; }
-  #airBtn.locked { border-color:#555; color:#888; }
+*{margin:0;padding:0;box-sizing:border-box;}
+html{height:100%;overflow:hidden;}
+body{background:#000;overflow:hidden;font-family:'Arial Black',Arial,sans-serif;touch-action:none;user-select:none;-webkit-user-select:none;height:100%;height:100dvh;position:fixed;width:100%;-webkit-overflow-scrolling:none;}
+#gameCanvas{display:block;position:fixed;top:0;left:0;width:100%;height:100%;touch-action:none;}
 
-/* ── Music / Cog ─────────────────────────────────────── */
-#cogBtn{position:fixed;bottom:18px;left:18px;z-index:30;pointer-events:auto;
-background:rgba(10,5,20,0.85);border:1px solid rgba(255,107,53,0.5);
-border-radius:50%;width:42px;height:42px;font-size:18px;
-color:rgba(255,107,53,0.8);cursor:pointer;
-align-items:center;justify-content:center;
--webkit-tap-highlight-color:transparent;touch-action:manipulation;}
-#cogMenuOverlay{position:fixed;top:0;left:0;width:100%;height:100%;
-background:rgba(0,0,0,0.72);z-index:80;display:none;
-align-items:center;justify-content:center;padding:16px;}
-#cogMenuOverlay.show{display:flex;}
-#cogCard{background:rgba(10,5,20,0.98);border:2px solid rgba(255,107,53,0.4);
-border-radius:14px;padding:22px 24px;max-width:340px;width:100%;position:relative;color:white;}
-#cogCard h2{font-size:11px;letter-spacing:4px;color:#ff6b35;margin-bottom:18px;text-align:center;}
-#closeCog{position:absolute;top:13px;right:15px;background:transparent;border:none;
-color:rgba(255,107,53,0.7);font-size:20px;cursor:pointer;line-height:1;
--webkit-tap-highlight-color:transparent;touch-action:manipulation;}
-.cogSection{margin-bottom:14px;}
-.cogSection label{font-size:8px;letter-spacing:2px;color:rgba(255,107,53,0.7);display:block;margin-bottom:6px;}
-#ytInput{width:100%;background:rgba(0,0,0,0.6);border:1px solid rgba(255,107,53,0.3);
-border-radius:5px;color:#ff8c5a;font-size:9px;padding:7px 9px;
-font-family:‘Arial Black’,Arial,sans-serif;outline:none;margin-bottom:7px;}
-.cogRow{display:flex;gap:7px;margin-bottom:7px;}
-.cogMusicBtn{flex:1;background:transparent;border:1px solid rgba(255,107,53,0.35);
-border-radius:5px;color:rgba(255,107,53,0.85);font-size:9px;letter-spacing:1px;
-padding:8px 4px;cursor:pointer;font-family:‘Arial Black’,Arial,sans-serif;
--webkit-tap-highlight-color:transparent;touch-action:manipulation;}
-.cogMusicBtn:active{background:rgba(255,107,53,0.2);}
-#musicStatus{font-size:8px;color:rgba(255,107,53,0.5);min-height:13px;margin-bottom:8px;}
-.volRow{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-.volRow span{font-size:8px;letter-spacing:1px;color:rgba(255,107,53,0.6);min-width:62px;}
-.volSlider{flex:1;-webkit-appearance:none;height:3px;border-radius:2px;
-background:rgba(255,107,53,0.25);outline:none;}
-.volSlider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
-border-radius:50%;background:#ff6b35;cursor:pointer;}
-#ytPlayerContainer{position:fixed;left:-220px;bottom:0;width:200px;height:200px;pointer-events:none;}
-
-/* Title screen */
-#titleScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
-#titleTapHint{font-family:‘Arial Black’,Arial,sans-serif;font-size:clamp(10px,3vw,13px);letter-spacing:4px;color:rgba(255,200,0,0.85);margin-top:60vh;animation:blink 1.4s ease-in-out infinite;text-align:center;position:relative;pointer-events:none;}
-@keyframes blink{0%,100%{opacity:0.25;}50%{opacity:1;}}
-
-/* Audio perm modal */
-#audioPermModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
-#audioPermCard{background:rgba(10,5,20,0.99);border:2px solid rgba(255,107,53,0.5);border-radius:16px;padding:28px 26px;max-width:340px;width:100%;text-align:center;}
-#audioPermCard h2{font-size:13px;letter-spacing:4px;color:#ff6b35;margin-bottom:12px;font-family:‘Arial Black’,Arial,sans-serif;}
+/* Audio modal */
+#audioPermModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
+#audioPermCard{background:rgba(10,5,20,0.99);border:2px solid rgba(255,107,53,0.6);border-radius:16px;padding:28px 26px;max-width:340px;width:100%;text-align:center;}
+#audioPermCard h2{font-size:13px;letter-spacing:4px;color:#ff6b35;margin-bottom:12px;}
 #audioPermCard p{font-size:10px;color:rgba(200,180,160,0.75);line-height:1.8;margin-bottom:8px;}
 #audioPermCard .hint{font-size:9px;color:rgba(255,107,53,0.4);margin-bottom:22px;letter-spacing:1px;}
 .permBtns{display:flex;flex-direction:column;gap:10px;}
-#enableAudioBtn{background:rgba(255,107,53,0.15);border:2px solid rgba(255,107,53,0.8);border-radius:8px;color:#ff6b35;font-family:‘Arial Black’,Arial,sans-serif;font-size:12px;letter-spacing:2px;padding:14px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+#enableAudioBtn{background:rgba(255,107,53,0.15);border:2px solid rgba(255,107,53,0.8);border-radius:8px;color:#ff6b35;font-family:‘Arial Black’,Arial,sans-serif;font-size:12px;letter-spacing:2px;padding:14px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 #enableAudioBtn:active{background:rgba(255,107,53,0.3);}
-#skipAudioBtn{background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:rgba(255,255,255,0.3);font-family:‘Arial Black’,Arial,sans-serif;font-size:9px;letter-spacing:2px;padding:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+#skipAudioBtn{background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.35);font-family:‘Arial Black’,Arial,sans-serif;font-size:9px;letter-spacing:2px;padding:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+
+/* Game over overlay */
+#gameOverScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.88);z-index:50;display:none;align-items:center;justify-content:center;padding:20px;}
+#gameOverCard{background:rgba(10,5,20,0.99);border:2px solid #ff4444;border-radius:14px;padding:24px;max-width:360px;width:100%;text-align:center;color:#fff;}
+#gameOverCard h2{color:#ff4444;font-size:1.4em;margin-bottom:10px;}
+.stat-line{color:#ffcc44;font-size:0.88em;margin:4px 0;}
+#retryBtn{background:#ff6b35;color:#fff;border:none;padding:14px 0;font-size:1em;font-family:‘Arial Black’,Arial,sans-serif;border-radius:10px;cursor:pointer;margin-top:14px;width:100%;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+
+/* Cog button */
+#cogBtn{position:fixed;bottom:18px;left:18px;z-index:30;pointer-events:auto;background:rgba(10,5,20,0.85);border:1px solid rgba(255,107,53,0.5);border-radius:50%;width:44px;height:44px;font-size:20px;color:rgba(255,107,53,0.85);cursor:pointer;display:none;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+
+/* Cog menu */
+#cogMenuOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:80;display:none;align-items:center;justify-content:center;padding:16px;}
+#cogMenuOverlay.show{display:flex;}
+#cogCard{background:rgba(10,5,20,0.99);border:2px solid rgba(255,107,53,0.4);border-radius:14px;padding:22px 24px;max-width:340px;width:100%;position:relative;color:#fff;}
+#cogCard h2{font-size:11px;letter-spacing:4px;color:#ff6b35;margin-bottom:18px;text-align:center;}
+#closeCog{position:absolute;top:13px;right:15px;background:transparent;border:none;color:rgba(255,107,53,0.7);font-size:20px;cursor:pointer;line-height:1;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+.cogSection label{font-size:8px;letter-spacing:2px;color:rgba(255,107,53,0.7);display:block;margin-bottom:6px;}
+#ytInput{width:100%;background:rgba(0,0,0,0.6);border:1px solid rgba(255,107,53,0.3);border-radius:5px;color:#ff8c5a;font-size:9px;padding:7px 9px;font-family:‘Arial Black’,Arial,sans-serif;outline:none;margin-bottom:7px;}
+.cogRow{display:flex;gap:7px;margin-bottom:7px;}
+.cogMusicBtn{flex:1;background:transparent;border:1px solid rgba(255,107,53,0.35);border-radius:5px;color:rgba(255,107,53,0.85);font-size:9px;letter-spacing:1px;padding:8px 4px;cursor:pointer;font-family:‘Arial Black’,Arial,sans-serif;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+#musicStatus{font-size:8px;color:rgba(255,107,53,0.5);min-height:13px;margin-bottom:8px;}
+.volRow{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.volRow span{font-size:8px;letter-spacing:1px;color:rgba(255,107,53,0.6);min-width:62px;}
+.volSlider{flex:1;-webkit-appearance:none;height:3px;border-radius:2px;background:rgba(255,107,53,0.25);outline:none;}
+.volSlider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#ff6b35;cursor:pointer;}
+
+/* Airstrike button */
+#airBtn{position:fixed;bottom:18px;right:18px;z-index:30;background:rgba(10,5,20,0.88);border:2px solid #ff4400;border-radius:12px;color:#fff;font-family:‘Arial Black’,Arial,sans-serif;font-size:0.7em;padding:10px 12px;text-align:center;pointer-events:auto;touch-action:manipulation;cursor:pointer;display:none;min-width:64px;-webkit-tap-highlight-color:transparent;}
+#airBtn.ready{border-color:#ff4400;box-shadow:0 0 12px rgba(255,68,0,0.6);}
+#airBtn.locked{border-color:#555;color:#888;}
+
+#ytPlayerContainer{position:fixed;left:-220px;bottom:0;width:200px;height:200px;pointer-events:none;}
 </style>
 
 </head>
 <body>
-<canvas id="gameCanvas"></canvas>
-<!-- Cog / Music settings button -->
-<button id="cogBtn" style="display:none;">&#9881;</button>
 
-<!-- Music settings overlay -->
+<canvas id="gameCanvas"></canvas>
+
+<!-- Audio permission modal -->
+
+<div id="audioPermModal">
+  <div id="audioPermCard">
+    <h2>ZOMBIE HORDE</h2>
+    <p>Enable audio for music and sound effects.</p>
+    <p class="hint">Toggle music anytime via the gear menu</p>
+    <div class="permBtns">
+      <button id="enableAudioBtn">ENABLE AUDIO &amp; PLAY</button>
+      <button id="skipAudioBtn">Play without sound</button>
+    </div>
+  </div>
+</div>
+
+<!-- Game over -->
+
+<div id="gameOverScreen">
+  <div id="gameOverCard">
+    <h2>SQUAD WIPED</h2>
+    <div id="finalStats"></div>
+    <button id="retryBtn">TRY AGAIN</button>
+  </div>
+</div>
+
+<!-- Cog button -->
+
+<button id="cogBtn">⚙</button>
+
+<!-- Cog menu -->
 
 <div id="cogMenuOverlay">
   <div id="cogCard">
     <button id="closeCog">&#x2715;</button>
     <h2>SETTINGS</h2>
     <div class="cogSection">
-      <label>MUSIC — PASTE YOUTUBE LINK OR PLAYLIST</label>
-      <input id="ytInput" type="text" placeholder="https://youtube.com/watch?v=..." value="https://youtu.be/XMcbjp4Sq4M?si=Etu5czBtYOXRGmtz">
+      <label>MUSIC — PASTE YOUTUBE LINK</label>
+      <input id="ytInput" type="text" placeholder="https://youtube.com/watch?v=..." value="https://youtu.be/XMcbjp4Sq4M">
       <div class="cogRow">
         <button class="cogMusicBtn" id="ytPlay">PLAY</button>
         <button class="cogMusicBtn" id="ytStop">STOP</button>
@@ -118,1282 +112,1094 @@ border-radius:50%;background:#ff6b35;cursor:pointer;}
   </div>
 </div>
 
+<!-- Airstrike button -->
+
+<button id="airBtn">STRIKE</button>
+
 <!-- Hidden YouTube player -->
 
 <div id="ytPlayerContainer"></div>
 
-<!-- Title screen -->
-
-<div id="titleScreen">
-  <canvas id="titleCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
-  <div id="titleTapHint" style="position:relative;z-index:1;pointer-events:none;">TAP TO BEGIN</div>
-</div>
-
-<!-- Audio permission modal -->
-
-<div id="audioPermModal" style="display:none;">
-  <div id="audioPermCard">
-    <h2>☠ ZOMBIE HORDE</h2>
-    <p>Enable audio for music and sound effects.</p>
-    <p class="hint">Toggle music anytime via ⚙ menu</p>
-    <div class="permBtns">
-      <button id="enableAudioBtn">ENABLE AUDIO &amp; PLAY</button>
-      <button id="skipAudioBtn">Play without sound</button>
-    </div>
-  </div>
-</div>
-
-<div id="overlay" style="display:none;">
-  <div id="startScreen" style="display:none;">
-    <h1>☠ ZOMBIE HORDE</h1>
-    <p class="subtitle">
-      👆 Drag LEFT/RIGHT to steer your squad<br>
-      🟢 <b style="color:#44ff88">Soldier pickups</b> drop from the top!<br>
-      📦 <b style="color:#ff6600">Weapon crates</b> fall randomly — 10s boost!<br>
-      ⚡ <b style="color:#ffff44">Lightning crates</b> strike 3 random targets!<br>
-      🚗 <b style="color:#ffdd44">Vehicles</b> drive through — shoot 50× to detonate!<br>
-      💣 <b style="color:#ff4400">Airstrike</b> awarded every 20,000 pts!<br>
-      👑 Kill the King Zombie to clear the round!
-    </p>
-    <button class="btn" id="btnStart" onclick="startGame()">▶ START GAME</button>
-  </div>
-  <div id="gameOverScreen" style="display:none">
-    <h2>💀 SQUAD WIPED</h2>
-    <div id="finalStats"></div>
-    <button class="btn" id="btnRestart" onclick="startGame()">↩ TRY AGAIN</button>
-  </div>
-</div>
-<button id="airBtn">💣<br>AIR<br>STRIKE</button>
 <script>
+'use strict';
 
-// ── iOS roundRect polyfill ────────────────────────────────────────────
-function rr(c,x,y,w,h,r){
-r=Math.min(r,Math.abs(w)/2,Math.abs(h)/2);
-if(w<0){x+=w;w=-w;} if(h<0){y+=h;h=-h;}
-c.moveTo(x+r,y);
-c.lineTo(x+w-r,y); c.arcTo(x+w,y,x+w,y+r,r);
-c.lineTo(x+w,y+h-r); c.arcTo(x+w,y+h,x+w-r,y+h,r);
-c.lineTo(x+r,y+h); c.arcTo(x,y+h,x,y+h-r,r);
-c.lineTo(x,y+r); c.arcTo(x,y,x+r,y,r);
-c.closePath();
+/* =========================================================
+   CANVAS + RESIZE
+========================================================= */
+var canvas = document.getElementById('gameCanvas');
+var ctx = canvas.getContext('2d');
+var W = 0, H = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  if (gameState && gameState.running) {
+    gameState.squadX = W / 2;
+  }
 }
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', function() { setTimeout(resize, 120); });
+resize();
 
-// ── MUSIC / YOUTUBE ───────────────────────────────────────────────────
-var ytPlayer = null;
-var ytPendingPlay = false;
-var musicVolume = 0.60;
-var sfxVolume = 0.60;
-var DEFAULT_YT = ‘https://youtu.be/XMcbjp4Sq4M?si=Etu5czBtYOXRGmtz’;
-
-function ytExtract(url){
-try{
-var pl=url.match(/[?&]list=([A-Za-z0-9_-]+)/);
-if(pl) return {type:‘playlist’,id:pl[1]};
-var v=url.match(/(?:v=|youtu.be/|embed/)([A-Za-z0-9_-]{11})/);
-if(v) return {type:‘video’,id:v[1]};
-}catch(e){}
-return null;
-}
-
-// ── COG MENU ──────────────────────────────────────────────────────────
-document.getElementById(‘cogBtn’).addEventListener(‘click’, function(){document.getElementById(‘cogMenuOverlay’).classList.add(‘show’);});
-document.getElementById(‘closeCog’).addEventListener(‘click’, function(){document.getElementById(‘cogMenuOverlay’).classList.remove(‘show’);});
-document.getElementById(‘cogMenuOverlay’).addEventListener(‘click’, function(e){if(e.target===this)this.classList.remove(‘show’);});
-
-document.getElementById(‘ytPlay’).addEventListener(‘click’, function(){
-var url=document.getElementById(‘ytInput’).value.trim()||DEFAULT_YT;
-if(ytPlayer&&ytPlayer.unMute){
-var info=ytExtract(url);if(!info){document.getElementById(‘musicStatus’).textContent=‘Invalid URL’;return;}
-if(info.type===‘playlist’){ytPlayer.loadPlaylist({list:info.id,listType:‘playlist’,index:0,shuffle:1});}
-else{ytPlayer.loadVideoById(info.id);}
-ytPlayer.unMute();ytPlayer.setVolume(Math.round(musicVolume*100));ytPlayer.playVideo();
-document.getElementById(‘musicStatus’).textContent=‘Playing’;
-} else { ytPendingPlay=true; }
-});
-document.getElementById(‘ytStop’).addEventListener(‘click’, function(){
-if(ytPlayer&&ytPlayer.pauseVideo){ytPlayer.pauseVideo();ytPlayer.mute();}
-document.getElementById(‘musicStatus’).textContent=‘Stopped’;
-});
-document.getElementById(‘musicVol’).addEventListener(‘input’, function(){musicVolume=this.value/100;if(ytPlayer&&ytPlayer.setVolume)ytPlayer.setVolume(Math.round(musicVolume*100));});
-document.getElementById(‘sfxVol’).addEventListener(‘input’, function(){sfxVolume=this.value/100;});
-
-// ── TITLE SCREEN (SR engine pattern — canvas drawn, proven on iPhone) ───
-(function(){
-var ts=document.getElementById(‘titleScreen’);
-var tc=document.getElementById(‘titleCanvas’);
-var tx=tc.getContext(‘2d’);
-var stars=[];var shine=0;var raf;
-function resize(){tc.width=window.innerWidth;tc.height=window.innerHeight;}
-resize();window.addEventListener(‘resize’,resize);
-for(var i=0;i<200;i++) stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.5+0.3,a:Math.random()*0.5+0.4,tw:Math.random()*Math.PI*2,ts:Math.random()*0.003+0.0005});
-function drawTitle(){
-var w=tc.width,h=tc.height;
-tx.fillStyle=’#000’;tx.fillRect(0,0,w,h);
-// Animated stars
-for(var i=0;i<stars.length;i++){
-var s=stars[i];s.tw+=s.ts;
-tx.beginPath();tx.arc(s.x*w,s.y*h,s.r,0,Math.PI*2);
-tx.fillStyle=‘rgba(255,120,60,’+(s.a*(0.6+0.4*Math.sin(s.tw)))+’)’;tx.fill();
-}
-// Title text
-tx.save();tx.translate(w/2,h*0.38);
-var fs=Math.min(w*0.16,h*0.13,72);var lineGap=fs*1.15;var lines=[‘ZOMBIE’,‘HORDE’];
-tx.textAlign=‘center’;tx.textBaseline=‘middle’;
-for(var li=0;li<lines.length;li++){
-var ly=(li-(lines.length-1)/2)*lineGap;
-tx.font=’900 ’+fs+‘px Arial Black,Arial,sans-serif’;
-tx.shadowColor=‘rgba(255,40,0,0.9)’;tx.shadowBlur=24;
-tx.fillStyle=‘rgba(180,20,0,0.25)’;tx.fillText(lines[li],3,ly+3);
-tx.shadowColor=‘rgba(255,160,0,0.7)’;tx.shadowBlur=32;
-var grd=tx.createLinearGradient(-w*0.3,-fs*0.5,w*0.3,fs*0.5);
-grd.addColorStop(0,’#ff2200’);grd.addColorStop(0.4,’#ffaa00’);grd.addColorStop(0.7,’#ff4400’);grd.addColorStop(1,’#ff2200’);
-tx.fillStyle=grd;tx.fillText(lines[li],0,ly);
-shine=(shine+0.002)%1;
-var sw=w*0.45;
-var sg=tx.createLinearGradient(-sw+shine*sw*2.5,ly-fs,-sw+shine*sw*2.5+sw*0.4,ly+fs);
-sg.addColorStop(0,‘rgba(255,255,255,0)’);sg.addColorStop(0.5,‘rgba(255,255,255,0.4)’);sg.addColorStop(1,‘rgba(255,255,255,0)’);
-tx.fillStyle=sg;tx.shadowBlur=0;tx.fillText(lines[li],0,ly);
-}
-tx.restore();
-// Subtitle
-var subY=h*0.38+lineGap*1.35;var subFs=Math.min(w*0.028,13);
-tx.save();tx.font=’bold ’+subFs+‘px Arial Black,Arial,sans-serif’;tx.textAlign=‘center’;
-tx.fillStyle=‘rgba(255,160,80,0.8)’;tx.shadowColor=‘rgba(255,80,0,0.5)’;tx.shadowBlur=10;
-tx.fillText(‘SURVIVE THE HORDE.’,w/2,subY);
-tx.fillText(‘KILL THE KING.’,w/2,subY+subFs*2.2);tx.restore();
-raf=requestAnimationFrame(drawTitle);
-}
-drawTitle();
-function proceed(){cancelAnimationFrame(raf);ts.style.transition=‘opacity 0.5s’;ts.style.opacity=‘0’;setTimeout(function(){ts.style.display=‘none’;document.getElementById(‘audioPermModal’).style.display=‘flex’;},500);}
-ts.addEventListener(‘click’,proceed);
-ts.addEventListener(‘touchend’,function(e){e.preventDefault();proceed();},{passive:false});
-})();
-
-// ── AUDIO PERMISSION MODAL ────────────────────────────────────────────
+/* =========================================================
+   AUDIO
+========================================================= */
 var audioCtx = null;
 var audioUnlocked = false;
+var sfxVolume = 0.6;
 
-document.getElementById(‘enableAudioBtn’).addEventListener(‘click’, function(){
-if(!audioCtx){try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
-if(audioCtx && audioCtx.state===‘suspended’) audioCtx.resume();
-audioUnlocked = true;
-if(ytPlayer && ytPlayer.unMute){
-ytPlayer.unMute(); ytPlayer.setVolume(Math.round(musicVolume*100)); ytPlayer.playVideo();
-document.getElementById(‘musicStatus’).textContent = ‘Playing’;
-} else { ytPendingPlay = true; }
-document.getElementById(‘audioPermModal’).style.display = ‘none’;
-startGame();
-});
-document.getElementById(‘skipAudioBtn’).addEventListener(‘click’, function(){
-document.getElementById(‘audioPermModal’).style.display = ‘none’;
-startGame();
-});
-
-const canvas = document.getElementById(‘gameCanvas’);
-const ctx = canvas.getContext(‘2d’);
-const airBtn = document.getElementById(‘airBtn’);
-
-let state = {};
-let mouseX = 0;
-let animFrame;
-let _starting = false;
-
-function resize(){
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-mouseX = canvas.width/2;
-if(state && state.squadX) state.squadX = canvas.width/2;
+function unlockAudio() {
+  if (audioCtx) return;
+  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  audioUnlocked = true;
 }
-resize();
-window.addEventListener(‘resize’, resize);
-window.addEventListener(‘orientationchange’, ()=>setTimeout(resize,100));
 
-function getTouchX(e){
-const r=canvas.getBoundingClientRect();
-const t=e.touches[0]||e.changedTouches[0];
-return t.clientX-r.left;
+function playTone(freq, type, vol, dur, delay) {
+  if (!audioUnlocked || !audioCtx) return;
+  try {
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.type = type || 'square';
+    o.frequency.value = freq;
+    var t = audioCtx.currentTime + (delay || 0);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol * sfxVolume, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.start(t); o.stop(t + dur + 0.01);
+  } catch(e) {}
 }
-canvas.addEventListener(‘mousemove’, e=>{
-const r=canvas.getBoundingClientRect(); mouseX=e.clientX-r.left;
+
+function sfxShoot() { playTone(880, 'square', 0.12, 0.04); }
+function sfxZombieDie() { playTone(110, 'sawtooth', 0.18, 0.12); }
+function sfxPickup() { playTone(660, 'sine', 0.15, 0.1); playTone(880, 'sine', 0.15, 0.1, 0.08); }
+function sfxAirstrike() { playTone(55, 'sawtooth', 0.3, 0.5); playTone(80, 'sawtooth', 0.25, 0.4, 0.1); }
+function sfxLaser() { playTone(1200, 'sine', 0.1, 0.05); }
+
+/* =========================================================
+   YOUTUBE MUSIC
+========================================================= */
+var ytPlayer = null;
+var ytPendingPlay = false;
+var musicVolume = 0.6;
+var DEFAULT_YT = 'https://youtu.be/XMcbjp4Sq4M';
+
+function ytExtract(url) {
+  try {
+    var pl = url.match(/[?&]list=([A-Za-z0-9_-]+)/);
+    if (pl) return { type: 'playlist', id: pl[1] };
+    var v = url.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/);
+    if (v) return { type: 'video', id: v[1] };
+  } catch(e) {}
+  return null;
+}
+
+function ytStartMusic() {
+  if (ytPlayer && ytPlayer.unMute) {
+    ytPlayer.unMute();
+    ytPlayer.setVolume(Math.round(musicVolume * 100));
+    ytPlayer.playVideo();
+    document.getElementById('musicStatus').textContent = 'Playing';
+  } else {
+    ytPendingPlay = true;
+  }
+}
+
+document.getElementById('cogBtn').addEventListener('click', function() {
+  document.getElementById('cogMenuOverlay').classList.add('show');
 });
-canvas.addEventListener(‘touchmove’, e=>{
-const ov=document.getElementById(‘overlay’);
-const ts=document.getElementById(‘titleScreen’);
-if(ts && ts.style.display!==‘none’) return;
-if(ov && ov.style.display===‘none’){ e.preventDefault(); mouseX=getTouchX(e); }
-},{passive:false});
-canvas.addEventListener(‘touchstart’, e=>{
-const ov=document.getElementById(‘overlay’);
-const ts=document.getElementById(‘titleScreen’);
-if(ts && ts.style.display!==‘none’) return;
-if(ov && ov.style.display===‘none’){ e.preventDefault(); mouseX=getTouchX(e); }
-},{passive:false});
+document.getElementById('closeCog').addEventListener('click', function() {
+  document.getElementById('cogMenuOverlay').classList.remove('show');
+});
+document.getElementById('cogMenuOverlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('show');
+});
+document.getElementById('ytPlay').addEventListener('click', function() {
+  var url = document.getElementById('ytInput').value.trim() || DEFAULT_YT;
+  if (ytPlayer && ytPlayer.unMute) {
+    var info = ytExtract(url);
+    if (!info) { document.getElementById('musicStatus').textContent = 'Invalid URL'; return; }
+    if (info.type === 'playlist') { ytPlayer.loadPlaylist({ list: info.id, listType: 'playlist', index: 0 }); }
+    else { ytPlayer.loadVideoById(info.id); }
+    ytPlayer.unMute(); ytPlayer.setVolume(Math.round(musicVolume * 100)); ytPlayer.playVideo();
+    document.getElementById('musicStatus').textContent = 'Playing';
+  } else { ytPendingPlay = true; }
+});
+document.getElementById('ytStop').addEventListener('click', function() {
+  if (ytPlayer && ytPlayer.pauseVideo) { ytPlayer.pauseVideo(); ytPlayer.mute(); }
+  document.getElementById('musicStatus').textContent = 'Stopped';
+});
+document.getElementById('musicVol').addEventListener('input', function() {
+  musicVolume = this.value / 100;
+  if (ytPlayer && ytPlayer.setVolume) ytPlayer.setVolume(Math.round(musicVolume * 100));
+});
+document.getElementById('sfxVol').addEventListener('input', function() { sfxVolume = this.value / 100; });
 
-function wireButtons(){
-airBtn.addEventListener(‘click’,    e=>{ e.stopPropagation(); fireAirstrike(); });
-airBtn.addEventListener(‘touchend’, e=>{ e.stopPropagation(); e.preventDefault(); fireAirstrike(); });
-}
-if(document.readyState===‘loading’) document.addEventListener(‘DOMContentLoaded’,wireButtons);
-else wireButtons();
+/* =========================================================
+   TITLE SCREEN — canvas drawn, events on canvas (proven pattern)
+========================================================= */
+(function() {
+  var tc = canvas; // reuse the game canvas for the title
+  var stars = [], shine = 0, raf, titleDone = false, blinkOn = true, blinkCount = 0;
+  for (var i = 0; i < 220; i++) {
+    stars.push({ x: Math.random(), y: Math.random(), r: Math.random() * 1.4 + 0.3,
+      a: Math.random() * 0.5 + 0.4, tw: Math.random() * Math.PI * 2, ts: Math.random() * 0.003 + 0.0005 });
+  }
 
-// ── WEAPON DEFS ───────────────────────────────────────────────────────
-const WEAPONS = {
-bullet:       {name:‘Bullet’,      color:’#ffe044’,glow:’#ffcc00’,attack:1, dur:999999,rate:8, range:999999,spread:true, continuous:false},
-flamethrower: {name:‘Flamethrower’,color:’#ff6600’,glow:’#ff3300’,attack:5, dur:600,   rate:3, range:155,   spread:true, continuous:false},
-laser:        {name:‘Laser’,       color:’#00ffff’,glow:’#00aaaa’,attack:20,dur:600,   rate:1, range:999999,spread:false,continuous:true },
-machinegun:   {name:‘Machine Gun’, color:’#ff44bb’,glow:’#cc0088’,attack:10,dur:600,   rate:2, range:999999,spread:true, continuous:false},
+  function drawTitleFrame() {
+    var w = tc.width, h = tc.height;
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, w, h);
+    // Stars
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i]; s.tw += s.ts;
+      ctx.beginPath(); ctx.arc(s.x * w, s.y * h, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,100,40,' + (s.a * (0.5 + 0.5 * Math.sin(s.tw))) + ')';
+      ctx.fill();
+    }
+    // ZOMBIE HORDE text
+    ctx.save(); ctx.translate(w / 2, h * 0.38);
+    var fs = Math.min(w * 0.17, h * 0.13, 76);
+    var lineGap = fs * 1.18;
+    var lines = ['ZOMBIE', 'HORDE'];
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (var li = 0; li < lines.length; li++) {
+      var ly = (li - (lines.length - 1) / 2) * lineGap;
+      ctx.font = '900 ' + fs + 'px Arial Black,Arial,sans-serif';
+      ctx.shadowColor = 'rgba(255,40,0,0.95)'; ctx.shadowBlur = 28;
+      ctx.fillStyle = 'rgba(160,15,0,0.3)'; ctx.fillText(lines[li], 4, ly + 4);
+      ctx.shadowColor = 'rgba(255,140,0,0.8)'; ctx.shadowBlur = 36;
+      var grd = ctx.createLinearGradient(-w * 0.3, -fs * 0.5, w * 0.3, fs * 0.5);
+      grd.addColorStop(0, '#ff2200'); grd.addColorStop(0.4, '#ffaa00');
+      grd.addColorStop(0.7, '#ff4400'); grd.addColorStop(1, '#ff2200');
+      ctx.fillStyle = grd; ctx.fillText(lines[li], 0, ly);
+      shine = (shine + 0.002) % 1;
+      var sw = w * 0.45;
+      var sg = ctx.createLinearGradient(-sw + shine * sw * 2.5, ly - fs, -sw + shine * sw * 2.5 + sw * 0.4, ly + fs);
+      sg.addColorStop(0, 'rgba(255,255,255,0)'); sg.addColorStop(0.5, 'rgba(255,255,255,0.38)'); sg.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = sg; ctx.shadowBlur = 0; ctx.fillText(lines[li], 0, ly);
+    }
+    ctx.restore();
+    // Subtitle
+    var subY = h * 0.38 + lineGap * 1.4;
+    var subFs = Math.min(w * 0.028, 13);
+    ctx.save(); ctx.font = 'bold ' + subFs + 'px Arial Black,Arial,sans-serif';
+    ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,160,80,0.8)';
+    ctx.shadowColor = 'rgba(255,80,0,0.5)'; ctx.shadowBlur = 10;
+    ctx.fillText('SURVIVE THE HORDE. KILL THE KING.', w / 2, subY); ctx.restore();
+    // TAP TO BEGIN blink
+    blinkCount++;
+    if (blinkCount % 48 === 0) blinkOn = !blinkOn;
+    if (blinkOn) {
+      var hintFs = Math.min(w * 0.036, 14);
+      ctx.save(); ctx.font = 'bold ' + hintFs + 'px Arial Black,Arial,sans-serif';
+      ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,210,0,0.92)';
+      ctx.shadowColor = 'rgba(255,200,0,0.7)'; ctx.shadowBlur = 10;
+      ctx.fillText('TAP TO BEGIN', w / 2, h * 0.82); ctx.restore();
+    }
+    raf = requestAnimationFrame(drawTitleFrame);
+  }
+
+  drawTitleFrame();
+
+  function proceed() {
+    if (titleDone) return; titleDone = true;
+    cancelAnimationFrame(raf);
+    // Fade out by drawing black overlay over several frames
+    var alpha = 0;
+    function fadeOut() {
+      alpha += 0.05;
+      ctx.fillStyle = 'rgba(0,0,0,' + Math.min(alpha, 1) + ')';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (alpha < 1) { requestAnimationFrame(fadeOut); }
+      else { document.getElementById('audioPermModal').style.display = 'flex'; }
+    }
+    fadeOut();
+  }
+
+  canvas.addEventListener('click', proceed);
+  canvas.addEventListener('touchend', function(e) { e.preventDefault(); proceed(); }, { passive: false });
+})();
+
+/* =========================================================
+   AUDIO PERMISSION MODAL
+========================================================= */
+document.getElementById('enableAudioBtn').addEventListener('click', function() {
+  unlockAudio();
+  ytStartMusic();
+  document.getElementById('audioPermModal').style.display = 'none';
+  startGame();
+});
+document.getElementById('skipAudioBtn').addEventListener('click', function() {
+  document.getElementById('audioPermModal').style.display = 'none';
+  startGame();
+});
+document.getElementById('retryBtn').addEventListener('click', function() {
+  document.getElementById('gameOverScreen').style.display = 'none';
+  startGame();
+});
+
+/* =========================================================
+   WEAPONS
+========================================================= */
+var WEAPONS = {
+  bullet:       { name: 'Rifle',        color: '#ffe044', glow: '#ffcc00', attack: 1,  dur: 0,   rate: 8,  range: 99999, spread: true,  continuous: false },
+  flamethrower: { name: 'Flamethrower', color: '#ff6600', glow: '#ff3300', attack: 5,  dur: 600, rate: 3,  range: 160,   spread: true,  continuous: false },
+  laser:        { name: 'Laser',        color: '#00ffff', glow: '#00aaaa', attack: 20, dur: 600, rate: 1,  range: 99999, spread: false, continuous: true  },
+  machinegun:   { name: 'Machine Gun',  color: '#ff44bb', glow: '#cc0088', attack: 10, dur: 600, rate: 2,  range: 99999, spread: true,  continuous: false }
 };
 
-// Car types
-const CAR_TYPES = [‘regular’,‘police’,‘ambulance’];
+/* =========================================================
+   GAME STATE
+========================================================= */
+var gameState = null;
+var animFrame = null;
+var dragX = null;
 
-// ── INIT STATE ────────────────────────────────────────────────────────
-function initState(prev){
-const round     = prev ? prev.round+1  : 1;
-const score     = prev ? prev.score    : 0;
-const kills     = prev ? prev.kills    : 0;
-const bossKills = prev ? prev.bossKills: 0;
-const soldiers  = prev ? prev.soldiers : 1;
-const airstrikes= prev ? prev.airstrikes: 0;
-state = {
-round, score, kills, bossKills, soldiers,
-zombieHpMult: Math.pow(2, round-1),
-squadX: canvas.width/2,
-bullets:[], zombies:[], bosses:[],
-soldierPickups:[], reinforcements:[],
-weaponPickups:[], lightningPickups:[], cars:[],
-particles:[], floats:[],
-airstrikes,            // banked airstrikes
-airstrikeThreshold: Math.floor(score/20000)*20000 + 20000, // next award
-currentWeapon:‘bullet’, weaponTimer:0,
-// airstrike state
-airPlane: null,
-bombs: [],
-lightningStrikes: [],  // active lightning effects
-startTime:Date.now(),
-lastBossTime:Date.now(),
-lastSoldierPickupTime:Date.now(),
-lastZombieTime:Date.now(),
-lastWeaponPickupTime:Date.now()-14000,
-lastLightningPickupTime:Date.now()-20000,
-lastCarTime:Date.now()-10000,
-lastReinfTime:0,
-reinforcementsStarted:false,
-kingSpawned:false, kingDefeated:false, roundClearTimer:0,
-gameOver:false, elapsed:0, fireTimer:0, frame:0,
-};
-updateAirBtn();
-}
-
-function updateAirBtn(){
-if(!state || state.gameOver){ airBtn.style.display=‘none’; return; }
-airBtn.style.display=‘block’;
-if(state.airstrikes>0){
-airBtn.className=‘ready’;
-airBtn.innerHTML=`STRIKE x${state.airstrikes}`;
-} else {
-airBtn.className=‘locked’;
-const needed = state.airstrikeThreshold - state.score;
-airBtn.innerHTML=`STRIKE<br>${needed>=1000?Math.ceil(needed/1000)+'k':needed}`;
-}
-}
-
-// ── DRAW HELPERS ──────────────────────────────────────────────────────
-function drawZombie(x,y,scale,hp,maxHp,type){
-ctx.save(); ctx.translate(x,y); ctx.scale(scale,scale);
-ctx.fillStyle=‘rgba(0,0,0,0.3)’;
-ctx.beginPath(); ctx.ellipse(0,22,12,4,0,0,Math.PI*2); ctx.fill();
-const bc=type===‘boss’?’#8B0000’:type===‘special’?’#6a0dad’:’#2d5a27’;
-const hc=type===‘boss’?’#b22222’:type===‘special’?’#9b30d0’:’#5a9952’;
-ctx.fillStyle=bc; ctx.beginPath(); rr(ctx,-9,0,18,22,4); ctx.fill();
-ctx.fillStyle=hc; ctx.beginPath(); ctx.ellipse(0,-8,11,12,0,0,Math.PI*2); ctx.fill();
-ctx.fillStyle=’#ff0’;
-ctx.beginPath(); ctx.ellipse(-4,-10,3,3,0,0,Math.PI*2); ctx.fill();
-ctx.beginPath(); ctx.ellipse(4,-10,3,3,0,0,Math.PI*2); ctx.fill();
-ctx.fillStyle=’#f00’;
-ctx.beginPath(); ctx.ellipse(-4,-10,1.5,1.5,0,0,Math.PI*2); ctx.fill();
-ctx.beginPath(); ctx.ellipse(4,-10,1.5,1.5,0,0,Math.PI*2); ctx.fill();
-ctx.strokeStyle=’#000’; ctx.lineWidth=1.5;
-ctx.beginPath(); ctx.arc(0,-4,5,0.2,Math.PI-0.2); ctx.stroke();
-ctx.fillStyle=’#eee’; ctx.fillRect(-4,-5,3,3); ctx.fillRect(1,-5,3,3);
-ctx.fillStyle=hc; ctx.fillRect(-16,2,7,5); ctx.fillRect(9,2,7,5);
-ctx.fillStyle=type===‘boss’?’#5a0000’:’#1a3a17’;
-ctx.fillRect(-8,20,6,8); ctx.fillRect(2,20,6,8);
-if(type===‘boss’){
-ctx.fillStyle=’#ffd700’;
-ctx.beginPath();
-ctx.moveTo(-10,-18); ctx.lineTo(-10,-24); ctx.lineTo(-5,-20);
-ctx.lineTo(0,-26); ctx.lineTo(5,-20); ctx.lineTo(10,-24);
-ctx.lineTo(10,-18); ctx.closePath(); ctx.fill();
-}
-if(maxHp>1){
-const bW=28, bf=(hp/maxHp)*bW;
-ctx.fillStyle=’#333’; ctx.fillRect(-bW/2,-30,bW,5);
-ctx.fillStyle=hp/maxHp>.5?’#44ff44’:hp/maxHp>.25?’#ffaa00’:’#ff2222’;
-ctx.fillRect(-bW/2,-30,bf,5);
-}
-ctx.restore();
+function makeState(prev) {
+  var round     = prev ? prev.round + 1 : 1;
+  var score     = prev ? prev.score : 0;
+  var kills     = prev ? prev.kills : 0;
+  var bossKills = prev ? prev.bossKills : 0;
+  var soldiers  = prev ? prev.soldiers : 1;
+  var airstrikes= prev ? prev.airstrikes : 0;
+  return {
+    running: true,
+    round: round,
+    score: score,
+    kills: kills,
+    bossKills: bossKills,
+    soldiers: soldiers,
+    zombieHpMult: Math.pow(2, round - 1),
+    squadX: W / 2,
+    elapsed: 0,
+    frame: 0,
+    fireTimer: 0,
+    currentWeapon: 'bullet',
+    weaponTimer: 0,
+    airstrikes: airstrikes,
+    airstrikeThreshold: Math.floor(score / 20000) * 20000 + 20000,
+    bullets: [],
+    zombies: [],
+    bosses: [],
+    soldierPickups: [],
+    weaponPickups: [],
+    lightningPickups: [],
+    cars: [],
+    bombs: [],
+    airPlane: null,
+    lightningStrikes: [],
+    particles: [],
+    floats: [],
+    lastZombieTime: Date.now(),
+    lastSoldierTime: Date.now(),
+    lastWeaponTime: Date.now() - 14000,
+    lastLightningTime: Date.now() - 20000,
+    lastCarTime: Date.now() - 10000,
+    lastBossTime: Date.now(),
+    reinforcementsAt60: false,
+    kingSpawned: false,
+    kingDefeated: false,
+    roundClearTimer: 0,
+    gameOver: false
+  };
 }
 
-function drawSoldier(x,y,scale){
-ctx.save(); ctx.translate(x,y); ctx.scale(scale,scale);
-ctx.fillStyle=‘rgba(0,0,0,0.2)’;
-ctx.beginPath(); ctx.ellipse(0,20,8,3,0,0,Math.PI*2); ctx.fill();
-ctx.fillStyle=’#5c7a3e’; ctx.beginPath(); rr(ctx,-7,0,14,18,3); ctx.fill();
-ctx.fillStyle=’#f4c68a’; ctx.beginPath(); ctx.ellipse(0,-7,8,9,0,0,Math.PI*2); ctx.fill();
-ctx.fillStyle=’#3d5228’;
-ctx.beginPath(); ctx.ellipse(0,-11,9,6,0,Math.PI,Math.PI*2); ctx.fill();
-ctx.fillRect(-9,-11,18,4);
-ctx.fillStyle=’#333’;
-ctx.beginPath(); ctx.ellipse(-3,-7,1.5,1.5,0,0,Math.PI*2); ctx.fill();
-ctx.beginPath(); ctx.ellipse(3,-7,1.5,1.5,0,0,Math.PI*2); ctx.fill();
-const wc=WEAPONS[state.currentWeapon];
-ctx.fillStyle=state.currentWeapon===‘bullet’?’#333’:wc.color;
-ctx.shadowColor=state.currentWeapon===‘bullet’?‘transparent’:wc.glow;
-ctx.shadowBlur=state.currentWeapon===‘bullet’?0:6;
-ctx.fillRect(6,-2,10,3); ctx.shadowBlur=0;
-ctx.fillStyle=’#3d5228’; ctx.fillRect(-6,16,5,7); ctx.fillRect(1,16,5,7);
-ctx.restore();
+/* =========================================================
+   DRAW HELPERS
+========================================================= */
+function rr(x, y, w, h, r) {
+  r = Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2);
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
 }
 
-function drawSoldierPickup(x,y){
-const big=state.elapsed>=60, col=big?’#44aaff’:’#44ff88’;
-ctx.save(); ctx.translate(x,y);
-ctx.shadowColor=col; ctx.shadowBlur=14;
-ctx.fillStyle=big?‘rgba(20,60,200,0.88)’:‘rgba(20,140,70,0.88)’;
-ctx.beginPath(); ctx.ellipse(0,0,22,22,0,0,Math.PI*2); ctx.fill();
-ctx.strokeStyle=col; ctx.lineWidth=2;
-ctx.beginPath(); ctx.ellipse(0,0,22,22,0,0,Math.PI*2); ctx.stroke();
-ctx.shadowBlur=0; ctx.fillStyle=’#fff’;
-ctx.font=‘bold 12px Arial’; ctx.textAlign=‘center’; ctx.textBaseline=‘middle’;
-ctx.fillText(big?’+10’:’+1’,0,0); ctx.restore();
+function drawZombie(x, y, scale, hp, maxHp, type) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(scale, scale);
+  var bc = type === 'boss' ? '#8B0000' : type === 'special' ? '#6a0dad' : '#2d5a27';
+  var hc = type === 'boss' ? '#b22222' : type === 'special' ? '#9b30d0' : '#5a9952';
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.beginPath(); ctx.ellipse(0, 23, 12, 4, 0, 0, Math.PI * 2); ctx.fill();
+  // Body
+  ctx.fillStyle = bc; ctx.beginPath(); rr(-9, 0, 18, 22, 4); ctx.fill();
+  // Head
+  ctx.fillStyle = hc; ctx.beginPath(); ctx.ellipse(0, -8, 11, 12, 0, 0, Math.PI * 2); ctx.fill();
+  // Eyes
+  ctx.fillStyle = '#ff0';
+  ctx.beginPath(); ctx.ellipse(-4, -10, 3, 3, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(4, -10, 3, 3, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#f00';
+  ctx.beginPath(); ctx.ellipse(-4, -10, 1.5, 1.5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(4, -10, 1.5, 1.5, 0, 0, Math.PI * 2); ctx.fill();
+  // Mouth
+  ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(0, -4, 5, 0.2, Math.PI - 0.2); ctx.stroke();
+  ctx.fillStyle = '#eee'; ctx.fillRect(-4, -5, 3, 3); ctx.fillRect(1, -5, 3, 3);
+  // Arms
+  ctx.fillStyle = hc; ctx.fillRect(-16, 2, 7, 5); ctx.fillRect(9, 2, 7, 5);
+  // Legs
+  ctx.fillStyle = bc; ctx.fillRect(-8, 20, 6, 8); ctx.fillRect(2, 20, 6, 8);
+  // Crown for boss
+  if (type === 'boss') {
+    ctx.fillStyle = '#ffd700';
+    ctx.beginPath();
+    ctx.moveTo(-10, -18); ctx.lineTo(-10, -25); ctx.lineTo(-5, -20);
+    ctx.lineTo(0, -27); ctx.lineTo(5, -20); ctx.lineTo(10, -25); ctx.lineTo(10, -18);
+    ctx.closePath(); ctx.fill();
+  }
+  // HP bar
+  if (maxHp > 1) {
+    var bW = 28, bf = (hp / maxHp) * bW;
+    ctx.fillStyle = '#333'; ctx.fillRect(-bW / 2, -32, bW, 5);
+    ctx.fillStyle = hp / maxHp > 0.5 ? '#44ff44' : hp / maxHp > 0.25 ? '#ffaa00' : '#ff2222';
+    ctx.fillRect(-bW / 2, -32, bf, 5);
+  }
+  ctx.restore();
 }
 
-function drawReinfPickup(x,y){
-ctx.save(); ctx.translate(x,y);
-ctx.shadowColor=’#44aaff’; ctx.shadowBlur=14;
-ctx.fillStyle=‘rgba(10,50,180,0.9)’;
-ctx.beginPath(); ctx.ellipse(0,0,24,24,0,0,Math.PI*2); ctx.fill();
-ctx.strokeStyle=’#44aaff’; ctx.lineWidth=2;
-ctx.beginPath(); ctx.ellipse(0,0,24,24,0,0,Math.PI*2); ctx.stroke();
-ctx.shadowBlur=0; ctx.fillStyle=’#fff’;
-ctx.font=‘bold 11px Arial’; ctx.textAlign=‘center’; ctx.textBaseline=‘middle’;
-ctx.fillText(’+10’,0,0); ctx.restore();
+function drawSoldier(x, y, scale) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(scale, scale);
+  var st = gameState;
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.beginPath(); ctx.ellipse(0, 20, 8, 3, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#5c7a3e'; ctx.beginPath(); rr(-7, 0, 14, 18, 3); ctx.fill();
+  ctx.fillStyle = '#f4c68a'; ctx.beginPath(); ctx.ellipse(0, -7, 8, 9, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#3d5228';
+  ctx.beginPath(); ctx.ellipse(0, -12, 9, 6, 0, Math.PI, Math.PI * 2); ctx.fill();
+  ctx.fillRect(-9, -12, 18, 4);
+  ctx.fillStyle = '#333';
+  ctx.beginPath(); ctx.ellipse(-3, -7, 1.5, 1.5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(3, -7, 1.5, 1.5, 0, 0, Math.PI * 2); ctx.fill();
+  var wc = WEAPONS[st ? st.currentWeapon : 'bullet'];
+  ctx.fillStyle = (st && st.currentWeapon !== 'bullet') ? wc.color : '#333';
+  if (st && st.currentWeapon !== 'bullet') { ctx.shadowColor = wc.glow; ctx.shadowBlur = 6; }
+  ctx.fillRect(6, -2, 10, 3);
+  ctx.shadowBlur = 0;
+  ctx.restore();
 }
 
-function drawWeaponPickup(p){
-const w=WEAPONS[p.weaponType];
-const flash=0.65+0.35*Math.sin(state.frame*0.28);
-ctx.save(); ctx.translate(p.x,p.y);
-ctx.shadowColor=w.glow; ctx.shadowBlur=20*flash;
-ctx.fillStyle=‘rgba(35,25,8,0.94)’;
-ctx.beginPath(); rr(ctx,-21,-21,42,42,5); ctx.fill();
-ctx.strokeStyle=w.color; ctx.lineWidth=2.2*flash;
-ctx.beginPath(); rr(ctx,-21,-21,42,42,5); ctx.stroke();
-ctx.strokeStyle=w.color; ctx.lineWidth=1; ctx.globalAlpha=0.4;
-ctx.beginPath(); ctx.moveTo(-21,0); ctx.lineTo(21,0); ctx.stroke();
-ctx.beginPath(); ctx.moveTo(0,-21); ctx.lineTo(0,21); ctx.stroke();
-ctx.globalAlpha=1; ctx.shadowBlur=0;
-if(p.weaponType===‘flamethrower’){
-ctx.fillStyle=’#ff4400’; ctx.beginPath(); ctx.ellipse(0,3,7,10,0,0,Math.PI*2); ctx.fill();
-ctx.fillStyle=’#ffcc00’; ctx.beginPath(); ctx.ellipse(0,0,4,6,0,0,Math.PI*2); ctx.fill();
-} else if(p.weaponType===‘laser’){
-ctx.strokeStyle=’#00ffff’; ctx.lineWidth=3; ctx.shadowColor=’#00ffff’; ctx.shadowBlur=10;
-ctx.beginPath(); ctx.moveTo(-14,0); ctx.lineTo(14,0); ctx.stroke();
-ctx.fillStyle=’#00ffff’; ctx.beginPath(); ctx.ellipse(14,0,5,5,0,0,Math.PI*2); ctx.fill();
-ctx.shadowBlur=0;
-} else if(p.weaponType===‘machinegun’){
-ctx.fillStyle=’#ff44bb’; ctx.fillRect(-13,-5,24,4); ctx.fillRect(-13,1,24,4);
-ctx.fillStyle=’#cc0088’; ctx.fillRect(-15,-7,6,14);
-}
-ctx.fillStyle=w.color; ctx.font=‘bold 7px Arial’;
-ctx.textAlign=‘center’; ctx.textBaseline=‘middle’;
-ctx.fillText(w.name.toUpperCase(),0,15); ctx.restore();
+function drawPickup(x, y, label, color) {
+  ctx.save();
+  ctx.shadowColor = color; ctx.shadowBlur = 14;
+  ctx.fillStyle = color; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); rr(x - 16, y - 14, 32, 28, 6); ctx.fill(); ctx.stroke();
+  ctx.shadowBlur = 0; ctx.fillStyle = '#fff';
+  ctx.font = 'bold 9px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(label, x, y);
+  ctx.restore();
 }
 
-function drawLightningPickup(p){
-const flash=0.5+0.5*Math.sin(state.frame*0.35);
-ctx.save(); ctx.translate(p.x,p.y);
-ctx.shadowColor=’#ffff00’; ctx.shadowBlur=24*flash;
-ctx.fillStyle=‘rgba(20,20,0,0.9)’;
-ctx.beginPath(); rr(ctx,-21,-21,42,42,5); ctx.fill();
-ctx.strokeStyle=`rgba(255,255,0,${flash})`;
-ctx.lineWidth=2.5; ctx.beginPath(); rr(ctx,-21,-21,42,42,5); ctx.stroke();
-// lightning bolt icon
-ctx.fillStyle=’#ffff00’;
-ctx.beginPath();
-ctx.moveTo(4,-16); ctx.lineTo(-4,-2); ctx.lineTo(2,-2);
-ctx.lineTo(-4,16); ctx.lineTo(6,0); ctx.lineTo(0,0);
-ctx.closePath(); ctx.fill();
-ctx.shadowBlur=0;
-ctx.fillStyle=’#ffff44’; ctx.font=‘bold 7px Arial’;
-ctx.textAlign=‘center’; ctx.textBaseline=‘middle’;
-ctx.fillText(‘LIGHTNING’,0,19); ctx.restore();
+function drawCar(car) {
+  ctx.save(); ctx.translate(car.x, car.y);
+  var clr = car.type === 'police' ? '#002299' : car.type === 'ambulance' ? '#ffffff' : '#884422';
+  ctx.fillStyle = clr;
+  ctx.beginPath(); rr(-22, -12, 44, 24, 5); ctx.fill();
+  ctx.fillStyle = 'rgba(150,220,255,0.7)';
+  ctx.fillRect(-16, -10, 12, 8); ctx.fillRect(4, -10, 12, 8);
+  if (car.type === 'police') {
+    ctx.fillStyle = '#ff4444'; ctx.fillRect(-6, -14, 5, 5);
+    ctx.fillStyle = '#4444ff'; ctx.fillRect(1, -14, 5, 5);
+  }
+  // HP bar
+  var bW = 40, bf = (car.hp / car.maxHp) * bW;
+  ctx.fillStyle = '#333'; ctx.fillRect(-20, 16, bW, 4);
+  ctx.fillStyle = '#ff8800'; ctx.fillRect(-20, 16, Math.max(0, bf), 4);
+  ctx.restore();
 }
 
-function drawCar(car){
-ctx.save(); ctx.translate(car.x,car.y);
-if(car.fromRight) ctx.scale(-1,1);
-const dmg=1-car.hp/50;
-
-// Shadow
-ctx.fillStyle=‘rgba(0,0,0,0.35)’;
-ctx.beginPath(); ctx.ellipse(0,22,40,8,0,0,Math.PI*2); ctx.fill();
-
-// Body color by type
-let bodyColor, roofColor, lightColor, lightFlash;
-if(car.carType===‘police’){
-bodyColor = dmg>0.5 ? ‘#333’ : ‘#111’;
-roofColor = ‘#fff’;
-lightColor = state.frame%20<10 ? ‘#ff2222’ : ‘#2222ff’;
-lightFlash = true;
-} else if(car.carType===‘ambulance’){
-bodyColor = dmg>0.5 ? ‘#aaa’ : ‘#fff’;
-roofColor = ‘#fff’;
-lightColor = state.frame%16<8 ? ‘#ff3333’ : ‘#ff9900’;
-lightFlash = true;
-} else {
-bodyColor = dmg>0.6?’#8B0000’:dmg>0.3?’#cc4400’:’#cc3300’;
-roofColor = dmg>0.5?’#555’:’#888’;
-lightColor = ‘#ffff88’;
-lightFlash = false;
+function drawParticle(p) {
+  ctx.save();
+  ctx.globalAlpha = p.life;
+  ctx.fillStyle = p.color;
+  ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
 }
 
-ctx.fillStyle=bodyColor; ctx.beginPath(); rr(ctx,-42,-14,84,28,7); ctx.fill();
-ctx.fillStyle=roofColor; ctx.beginPath(); rr(ctx,-24,-28,48,18,5); ctx.fill();
-
-// Police markings
-if(car.carType===‘police’){
-ctx.fillStyle=’#fff’;
-ctx.fillRect(-42,0,84,4); // white stripe
-ctx.fillStyle=’#ffff00’;
-ctx.font=‘bold 7px Arial’; ctx.textAlign=‘center’; ctx.textBaseline=‘middle’;
-ctx.fillText(‘POLICE’,0,8);
-} else if(car.carType===‘ambulance’){
-ctx.fillStyle=’#ff3333’;
-ctx.fillRect(-4,-14,8,28); ctx.fillRect(-20,-4,40,8); // red cross
-ctx.fillStyle=’#ff3333’;
-ctx.font=‘bold 6px Arial’; ctx.textAlign=‘center’; ctx.textBaseline=‘middle’;
-ctx.fillText(‘AMBULANCE’,0,20);
+function drawBullet(b) {
+  ctx.save();
+  var wc = WEAPONS[b.weapon || 'bullet'];
+  ctx.fillStyle = wc.color; ctx.shadowColor = wc.glow; ctx.shadowBlur = 8;
+  if (b.weapon === 'flamethrower') {
+    ctx.globalAlpha = 0.7 + Math.random() * 0.3;
+    ctx.beginPath(); ctx.arc(b.x, b.y, 5 + Math.random() * 3, 0, Math.PI * 2); ctx.fill();
+  } else {
+    ctx.fillRect(b.x - 2, b.y - 5, 4, 10);
+  }
+  ctx.restore();
 }
 
-// Windows
-ctx.fillStyle=‘rgba(140,210,255,0.75)’;
-ctx.beginPath(); rr(ctx,-22,-26,20,14,3); ctx.fill();
-ctx.beginPath(); rr(ctx,2,-26,20,14,3); ctx.fill();
-
-// Wheels
-ctx.fillStyle=’#222’;
-ctx.beginPath(); ctx.ellipse(-26,16,11,11,0,0,Math.PI*2); ctx.fill();
-ctx.beginPath(); ctx.ellipse(26,16,11,11,0,0,Math.PI*2); ctx.fill();
-ctx.fillStyle=’#555’;
-ctx.beginPath(); ctx.ellipse(-26,16,5,5,0,0,Math.PI*2); ctx.fill();
-ctx.beginPath(); ctx.ellipse(26,16,5,5,0,0,Math.PI*2); ctx.fill();
-
-// Lights / siren
-if(lightFlash){
-ctx.fillStyle=lightColor; ctx.shadowColor=lightColor; ctx.shadowBlur=10;
-ctx.beginPath(); rr(ctx,-22,-32,12,6,2); ctx.fill();
-ctx.beginPath(); rr(ctx,10,-32,12,6,2); ctx.fill();
-ctx.shadowBlur=0;
-} else {
-ctx.fillStyle=lightColor; ctx.shadowColor=’#ffff00’; ctx.shadowBlur=8;
-ctx.fillRect(39,-8,5,7); ctx.shadowBlur=0;
+function drawAirplane(p) {
+  ctx.save(); ctx.translate(p.x, p.y);
+  ctx.fillStyle = '#aaa'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, -20); ctx.lineTo(-8, 10); ctx.lineTo(0, 5); ctx.lineTo(8, 10); ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  ctx.restore();
 }
 
-// Damage smoke
-if(dmg>0.3){
-ctx.fillStyle=`rgba(80,80,80,${dmg*0.45})`;
-ctx.beginPath();
-ctx.ellipse(-8+Math.sin(state.frame*0.12)*3,-32,11*dmg,11*dmg,0,0,Math.PI*2);
-ctx.fill();
+function drawBomb(b) {
+  ctx.save(); ctx.translate(b.x, b.y);
+  ctx.fillStyle = '#ff6600'; ctx.shadowColor = '#ff4400'; ctx.shadowBlur = 12;
+  ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
 }
 
-// HP bar
-const bW=64;
-ctx.fillStyle=’#333’; ctx.fillRect(-bW/2,-42,bW,6);
-ctx.fillStyle=dmg<0.5?’#44ff44’:’#ff4400’;
-ctx.fillRect(-bW/2,-42,(car.hp/50)*bW,6);
-ctx.strokeStyle=’#555’; ctx.lineWidth=1; ctx.strokeRect(-bW/2,-42,bW,6);
-ctx.fillStyle=’#fff’; ctx.font=‘bold 8px Arial’; ctx.textAlign=‘center’;
-ctx.fillText(`${car.hp}/50`,0,-45);
-ctx.restore();
+function drawHUD() {
+  var fs = Math.max(10, Math.min(13, W / 70));
+  var pad = 8, barH = 58;
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.beginPath(); rr(pad, pad, W - pad * 2, barH, 7); ctx.fill();
+
+  ctx.font = 'bold ' + fs + 'px Arial';
+  // Soldiers
+  ctx.fillStyle = '#44ff88'; ctx.shadowColor = '#44ff88'; ctx.shadowBlur = 4;
+  ctx.textAlign = 'left'; ctx.fillText('[S] ' + gameState.soldiers, pad + 10, pad + 20); ctx.shadowBlur = 0;
+  // Score
+  ctx.fillStyle = '#ffe044'; ctx.shadowColor = '#ffe044'; ctx.shadowBlur = 4;
+  ctx.textAlign = 'center'; ctx.fillText('* ' + gameState.score.toLocaleString(), W / 2, pad + 20); ctx.shadowBlur = 0;
+  // Timer
+  ctx.fillStyle = '#aaddff'; ctx.textAlign = 'right';
+  var m = Math.floor(gameState.elapsed / 60), s = Math.floor(gameState.elapsed % 60).toString().padStart(2, '0');
+  ctx.fillText(m + ':' + s, W - pad - 10, pad + 20);
+
+  var fs2 = Math.max(9, Math.min(11, W / 82));
+  ctx.font = 'bold ' + fs2 + 'px Arial';
+  // Round
+  ctx.fillStyle = '#ffd700'; ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 3;
+  ctx.textAlign = 'left'; ctx.fillText('R' + gameState.round + ' x' + gameState.zombieHpMult + 'HP', pad + 10, pad + 46); ctx.shadowBlur = 0;
+  // Weapon / center info
+  if (gameState.currentWeapon !== 'bullet' && gameState.weaponTimer > 0) {
+    var wc = WEAPONS[gameState.currentWeapon];
+    ctx.fillStyle = wc.color; ctx.shadowColor = wc.glow; ctx.shadowBlur = 6;
+    ctx.textAlign = 'center'; ctx.fillText(wc.name.toUpperCase() + ' ' + Math.ceil(gameState.weaponTimer / 60) + 's', W / 2, pad + 46);
+    ctx.shadowBlur = 0;
+  } else {
+    ctx.fillStyle = '#cc88ff'; ctx.textAlign = 'center';
+    ctx.fillText(gameState.kills + ' kills | B:' + gameState.bossKills, W / 2, pad + 46);
+  }
+  // Boss timer
+  var tSince = (Date.now() - gameState.lastBossTime) / 1000;
+  var nb = Math.max(0, 60 - tSince);
+  ctx.fillStyle = nb < 10 ? '#ff4444' : '#ffaa44'; ctx.textAlign = 'right';
+  ctx.fillText((gameState.kingSpawned ? 'BOSS' : 'KING') + ' ' + Math.ceil(nb) + 's', W - pad - 10, pad + 46);
 }
 
-function drawBulletProj(b){
-if(b.weaponType===‘laser’) return;
-ctx.save();
-if(b.weaponType===‘flamethrower’){
-ctx.globalAlpha=0.55+Math.random()*0.45;
-ctx.fillStyle=Math.random()>0.5?’#ff6600’:’#ffaa00’;
-ctx.shadowColor=’#ff3300’; ctx.shadowBlur=12;
-ctx.beginPath(); ctx.ellipse(b.x,b.y,5+Math.random()*5,5+Math.random()*5,0,0,Math.PI*2); ctx.fill();
-} else if(b.weaponType===‘machinegun’){
-ctx.fillStyle=’#ff44bb’; ctx.shadowColor=’#ff00aa’; ctx.shadowBlur=7;
-ctx.beginPath(); ctx.ellipse(b.x,b.y,3,7,0,0,Math.PI*2); ctx.fill();
-} else {
-ctx.fillStyle=’#ffe044’; ctx.shadowColor=’#ffcc00’; ctx.shadowBlur=6;
-ctx.beginPath(); ctx.ellipse(b.x,b.y,3,6,0,0,Math.PI*2); ctx.fill();
-}
-ctx.restore();
+/* =========================================================
+   SPAWN HELPERS
+========================================================= */
+function spawnZombie() {
+  var st = gameState;
+  var x = Math.random() * W;
+  var special = Math.random() < 0.15;
+  var hp = Math.round((special ? 3 : 1) * st.zombieHpMult);
+  st.zombies.push({ x: x, y: -30, hp: hp, maxHp: hp, speed: 1.2 + Math.random() * 0.8 + (st.round - 1) * 0.15, type: special ? 'special' : 'normal' });
 }
 
-function drawLaserBeams(squadY){
-if(state.currentWeapon!==‘laser’||state.weaponTimer<=0) return;
-const sp=14, cnt=Math.min(state.soldiers,12), tw=(cnt-1)*sp;
-ctx.save();
-for(let i=0;i<cnt;i++){
-const sx=state.squadX-tw/2+i*sp;
-ctx.strokeStyle=`rgba(0,255,255,${0.6+0.4*Math.sin(state.frame*0.25+i)})`;
-ctx.lineWidth=1.5+Math.random()*1.5;
-ctx.shadowColor=’#00ffff’; ctx.shadowBlur=14;
-ctx.beginPath(); ctx.moveTo(sx,squadY-20); ctx.lineTo(sx,0); ctx.stroke();
-}
-ctx.restore();
+function spawnBoss() {
+  var st = gameState;
+  var hp = Math.round(40 * st.zombieHpMult);
+  st.bosses.push({ x: W / 2 + (Math.random() - 0.5) * W * 0.4, y: -60, hp: hp, maxHp: hp, speed: 0.7 + (st.round - 1) * 0.1, type: 'boss' });
+  st.kingSpawned = true;
 }
 
-function drawExplosionEffect(car){
-const prog=1-car.explodeTimer/60, r=140*prog, alpha=(1-prog)*0.8;
-ctx.save(); ctx.globalAlpha=alpha;
-const g=ctx.createRadialGradient(car.x,car.y,0,car.x,car.y,r);
-g.addColorStop(0,’#ffffff’); g.addColorStop(0.25,’#ffdd00’);
-g.addColorStop(0.6,’#ff4400’); g.addColorStop(1,‘transparent’);
-ctx.fillStyle=g; ctx.beginPath(); ctx.arc(car.x,car.y,r,0,Math.PI*2); ctx.fill();
-ctx.restore();
+function spawnParticles(x, y, color, count) {
+  for (var i = 0; i < count; i++) {
+    var a = Math.random() * Math.PI * 2;
+    var spd = 1 + Math.random() * 3;
+    gameState.particles.push({ x: x, y: y, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, r: 2 + Math.random() * 3, color: color, life: 1, decay: 0.025 + Math.random() * 0.03 });
+  }
 }
 
-function drawBomb(bomb){
-ctx.save(); ctx.translate(bomb.x,bomb.y);
-// Trail
-ctx.fillStyle=‘rgba(255,100,0,0.5)’;
-ctx.beginPath(); ctx.ellipse(0,-10,4,14,0,0,Math.PI*2); ctx.fill();
-// Bomb body
-ctx.fillStyle=’#222’;
-ctx.beginPath(); ctx.ellipse(0,0,8,12,0,0,Math.PI*2); ctx.fill();
-ctx.fillStyle=’#ff4400’;
-ctx.beginPath(); ctx.ellipse(0,-8,4,4,0,0,Math.PI*2); ctx.fill();
-ctx.restore();
+function addFloat(x, y, text, color, big) {
+  gameState.floats.push({ x: x, y: y, text: text, color: color, big: big, alpha: 1, vy: -1.2 });
 }
 
-function drawAirplane(plane){
-ctx.save(); ctx.translate(plane.x,plane.y);
-if(plane.vx<0) ctx.scale(-1,1);
-ctx.fillStyle=’#aaa’;
-// Fuselage
-ctx.beginPath(); rr(ctx,-30,-8,60,16,8); ctx.fill();
-// Wings
-ctx.fillStyle=’#888’;
-ctx.beginPath(); ctx.moveTo(-10,-8); ctx.lineTo(-30,-30); ctx.lineTo(10,-8); ctx.closePath(); ctx.fill();
-ctx.beginPath(); ctx.moveTo(-10,8); ctx.lineTo(-30,30); ctx.lineTo(10,8); ctx.closePath(); ctx.fill();
-// Cockpit
-ctx.fillStyle=‘rgba(140,210,255,0.8)’;
-ctx.beginPath(); ctx.ellipse(18,0,10,6,0,0,Math.PI*2); ctx.fill();
-// Engine glow
-ctx.fillStyle=’#ff6600’; ctx.shadowColor=’#ff4400’; ctx.shadowBlur=12;
-ctx.beginPath(); ctx.ellipse(-28,0,5,5,0,0,Math.PI*2); ctx.fill();
-ctx.shadowBlur=0;
-ctx.restore();
+function updateAirBtn() {
+  var btn = document.getElementById('airBtn');
+  if (!gameState || gameState.gameOver) { btn.style.display = 'none'; return; }
+  btn.style.display = 'block';
+  if (gameState.airstrikes > 0) {
+    btn.className = 'ready';
+    btn.textContent = 'STRIKE x' + gameState.airstrikes;
+  } else {
+    btn.className = 'locked';
+    var needed = gameState.airstrikeThreshold - gameState.score;
+    btn.textContent = 'STRIKE ' + (needed >= 1000 ? Math.ceil(needed / 1000) + 'k' : needed);
+  }
 }
 
-function drawLightningEffect(ls){
-const alpha=ls.life/30;
-ctx.save(); ctx.globalAlpha=alpha;
-// White flash circle
-const g=ctx.createRadialGradient(ls.x,ls.y,0,ls.x,ls.y,ls.radius);
-g.addColorStop(0,‘rgba(255,255,255,0.9)’);
-g.addColorStop(0.3,‘rgba(200,200,255,0.6)’);
-g.addColorStop(1,‘transparent’);
-ctx.fillStyle=g;
-ctx.beginPath(); ctx.arc(ls.x,ls.y,ls.radius,0,Math.PI*2); ctx.fill();
-// Bolt from top
-ctx.strokeStyle=`rgba(255,255,100,${alpha})`;
-ctx.lineWidth=3+Math.random()*3; ctx.shadowColor=’#ffff00’; ctx.shadowBlur=20;
-ctx.beginPath();
-ctx.moveTo(ls.x,0);
-for(let y=0;y<ls.y;y+=20){
-ctx.lineTo(ls.x+(Math.random()-0.5)*30, y);
-}
-ctx.lineTo(ls.x,ls.y); ctx.stroke();
-ctx.shadowBlur=0; ctx.restore();
+/* =========================================================
+   AIRSTRIKE
+========================================================= */
+function fireAirstrike() {
+  var st = gameState;
+  if (!st || st.airstrikes <= 0 || st.airPlane) return;
+  st.airstrikes--;
+  updateAirBtn();
+  sfxAirstrike();
+  st.airPlane = { x: -40, y: H * 0.15, speed: 6 };
 }
 
-function drawParticle(p){
-ctx.save(); ctx.globalAlpha=p.alpha; ctx.fillStyle=p.color;
-if(p.glow){ctx.shadowColor=p.color;ctx.shadowBlur=p.glow;}
-ctx.beginPath(); ctx.ellipse(p.x,p.y,p.r,p.r,0,0,Math.PI*2); ctx.fill();
-ctx.restore();
+document.getElementById('airBtn').addEventListener('click', function(e) { e.stopPropagation(); fireAirstrike(); });
+document.getElementById('airBtn').addEventListener('touchend', function(e) { e.stopPropagation(); e.preventDefault(); fireAirstrike(); }, { passive: false });
+
+/* =========================================================
+   LIGHTNING STRIKE
+========================================================= */
+function fireLightning(targets) {
+  var picked = [];
+  var pool = targets.slice();
+  for (var i = 0; i < 3 && pool.length > 0; i++) {
+    var idx = Math.floor(Math.random() * pool.length);
+    picked.push(pool[idx]);
+    pool.splice(idx, 1);
+  }
+  picked.forEach(function(t) {
+    t.hp -= Math.round(8 * gameState.zombieHpMult);
+    if (t.hp < 0) t.hp = 0;
+    gameState.lightningStrikes.push({ x: t.x, y: t.y, life: 18 });
+    spawnParticles(t.x, t.y, '#ffff44', 8);
+    addFloat(t.x, t.y - 20, 'ZAP!', '#ffff00', false);
+  });
 }
 
-// ── SPAWN ─────────────────────────────────────────────────────────────
-function spawnZombie(){
-const x=30+Math.random()*(canvas.width-60);
-const spec=Math.random()<0.2;
-const baseHp=spec?3+Math.floor(Math.random()*23):1;
-const hp=Math.max(1,Math.round(baseHp*state.zombieHpMult));
-state.zombies.push({x,y:-30,hp,maxHp:hp,type:spec?‘special’:‘normal’,
-speed:0.4+Math.random()*0.5,scale:spec?1.0+Math.random()*0.4:0.9+Math.random()*0.3,
-wobble:Math.random()*Math.PI*2});
+/* =========================================================
+   UPDATE
+========================================================= */
+function update() {
+  var st = gameState;
+  if (!st || !st.running || st.gameOver) return;
+  var now = Date.now();
+  st.elapsed += 1 / 60;
+  st.frame++;
+
+  // Round clear
+  if (st.kingDefeated) {
+    st.roundClearTimer--;
+    if (st.roundClearTimer <= 0) {
+      var prev = { round: st.round, score: st.score, kills: st.kills, bossKills: st.bossKills, soldiers: st.soldiers, airstrikes: st.airstrikes };
+      gameState = makeState(prev);
+      return;
+    }
+  }
+
+  // Reinforcements at 60s
+  if (st.elapsed >= 60 && !st.reinforcementsAt60) {
+    st.reinforcementsAt60 = true;
+    st.soldiers += 10;
+    addFloat(W / 2, H / 2, '+10 REINFORCEMENTS!', '#44ff88', true);
+    sfxPickup();
+  }
+
+  // Weapon timer
+  if (st.currentWeapon !== 'bullet' && st.weaponTimer > 0) {
+    st.weaponTimer--;
+    if (st.weaponTimer <= 0) st.currentWeapon = 'bullet';
+  }
+
+  // Airstrike award
+  if (st.score >= st.airstrikeThreshold) {
+    st.airstrikes++;
+    st.airstrikeThreshold += 20000;
+    addFloat(W / 2, H * 0.4, 'AIRSTRIKE READY!', '#ff4400', true);
+    updateAirBtn();
+  }
+
+  // Spawn zombies
+  var zombieRate = Math.max(400, 1600 - st.round * 80);
+  if (now - st.lastZombieTime > zombieRate && !st.kingDefeated) {
+    spawnZombie(); st.lastZombieTime = now;
+  }
+
+  // Spawn boss every ~60s
+  if (now - st.lastBossTime > 60000 && !st.kingSpawned && !st.kingDefeated) {
+    spawnBoss(); st.lastBossTime = now;
+  }
+
+  // Spawn soldier pickup
+  if (now - st.lastSoldierTime > 5000) {
+    var sx = 40 + Math.random() * (W - 80);
+    st.soldierPickups = st.soldierPickups || [];
+    st.soldierPickups.push({ x: sx, y: -20 });
+    st.lastSoldierTime = now;
+  }
+
+  // Spawn weapon pickup
+  if (now - st.lastWeaponTime > 15000) {
+    var wnames = ['flamethrower', 'laser', 'machinegun'];
+    var wx = 40 + Math.random() * (W - 80);
+    st.weaponPickups.push({ x: wx, y: -20, weapon: wnames[Math.floor(Math.random() * wnames.length)] });
+    st.lastWeaponTime = now;
+  }
+
+  // Spawn lightning pickup
+  if (now - st.lastLightningTime > 22000) {
+    st.lightningPickups.push({ x: 40 + Math.random() * (W - 80), y: -20 });
+    st.lastLightningTime = now;
+  }
+
+  // Spawn car
+  if (now - st.lastCarTime > 12000) {
+    var types = ['regular', 'police', 'ambulance'];
+    var fromLeft = Math.random() < 0.5;
+    var carHp = 50;
+    st.cars.push({ x: fromLeft ? -60 : W + 60, y: H * 0.55 + (Math.random() - 0.5) * 80, speed: fromLeft ? 2.5 : -2.5, hp: carHp, maxHp: carHp, type: types[Math.floor(Math.random() * types.length)] });
+    st.lastCarTime = now;
+  }
+
+  // Squad firing
+  var squadY = H - 80;
+  st.fireTimer++;
+  var wc = WEAPONS[st.currentWeapon];
+  if (st.fireTimer >= wc.rate && st.soldiers > 0) {
+    st.fireTimer = 0;
+    var targets = st.zombies.concat(st.bosses).filter(function(z) {
+      return Math.abs(z.x - st.squadX) < wc.range * 2 && z.y > 0;
+    });
+    if (st.currentWeapon === 'laser' && targets.length > 0) {
+      // Laser beam — instant hit closest
+      targets.sort(function(a, b) { return a.y - b.y; });
+      var lt = targets[0];
+      lt.hp -= wc.attack * (st.soldiers * 0.3 + 1);
+      sfxLaser();
+    } else {
+      var spread = Math.min(st.soldiers, 12);
+      for (var i = 0; i < spread; i++) {
+        var bx = st.squadX + (i - spread / 2) * 12 + (Math.random() - 0.5) * 8;
+        st.bullets.push({ x: bx, y: squadY - 10, vy: -(8 + Math.random() * 2), vx: (Math.random() - 0.5) * 1.5, weapon: st.currentWeapon });
+        if (i === 0) sfxShoot();
+      }
+    }
+  }
+
+  // Move bullets
+  st.bullets = st.bullets.filter(function(b) {
+    b.x += b.vx; b.y += b.vy;
+    return b.y > -20 && b.y < H + 20 && b.x > -20 && b.x < W + 20;
+  });
+
+  // Move zombies & check collisions
+  var bHits = new Set();
+  var zKill = [];
+  st.zombies.forEach(function(z, zi) {
+    z.y += z.speed;
+    // Bullet hits
+    st.bullets.forEach(function(b, bi) {
+      if (bHits.has(bi)) return;
+      var dx = b.x - z.x, dy = b.y - z.y;
+      if (Math.abs(dx) < 16 && Math.abs(dy) < 20) {
+        var dmg = WEAPONS[b.weapon || 'bullet'].attack * (1 + st.soldiers * 0.05);
+        z.hp -= dmg;
+        bHits.add(bi);
+        spawnParticles(z.x, z.y, '#88ff44', 3);
+      }
+    });
+    if (z.hp <= 0) { zKill.push(zi); return; }
+    // Reached squad
+    if (z.y >= squadY) {
+      z.y = -30; z.x = Math.random() * W;
+      st.soldiers = Math.max(0, st.soldiers - 1);
+      spawnParticles(st.squadX, squadY, '#ff4444', 8);
+      addFloat(st.squadX, squadY - 20, '-1 SOLDIER', '#ff4444', false);
+      if (st.soldiers <= 0) { triggerGameOver(); return; }
+    }
+  });
+  st.bullets = st.bullets.filter(function(_, i) { return !bHits.has(i); });
+  zKill.reverse().forEach(function(zi) {
+    var z = st.zombies[zi];
+    st.score += z.type === 'special' ? 150 : 100;
+    st.kills++;
+    spawnParticles(z.x, z.y, '#44ff88', 6);
+    addFloat(z.x, z.y, z.type === 'special' ? '+150' : '+100', '#ffe044', false);
+    sfxZombieDie();
+    st.zombies.splice(zi, 1);
+  });
+
+  // Boss movement & hits
+  var bossKill = [];
+  st.bosses.forEach(function(boss, bi) {
+    boss.y += boss.speed;
+    st.bullets.forEach(function(b, bui) {
+      if (bHits.has('bo' + bui)) return;
+      var dx = b.x - boss.x, dy = b.y - boss.y;
+      if (Math.abs(dx) < 28 && Math.abs(dy) < 36) {
+        var dmg = WEAPONS[b.weapon || 'bullet'].attack * (1 + st.soldiers * 0.05);
+        boss.hp -= dmg;
+        bHits.add('bo' + bui);
+        spawnParticles(boss.x, boss.y, '#ff4444', 2);
+      }
+    });
+    if (boss.hp <= 0) { bossKill.push(bi); return; }
+    if (boss.y >= squadY) {
+      boss.y = -60; boss.x = Math.random() * W;
+      st.soldiers = Math.max(0, st.soldiers - 3);
+      spawnParticles(st.squadX, squadY, '#ff0000', 14);
+      addFloat(st.squadX, squadY - 30, '-3 SOLDIERS', '#ff2222', true);
+      if (st.soldiers <= 0) { triggerGameOver(); return; }
+    }
+  });
+  bossKill.reverse().forEach(function(bi) {
+    var boss = st.bosses[bi];
+    st.score += 2000;
+    st.bossKills++;
+    spawnParticles(boss.x, boss.y, '#ffd700', 20);
+    addFloat(boss.x, boss.y, '+2000 KING!', '#ffd700', true);
+    sfxZombieDie();
+    st.bosses.splice(bi, 1);
+    st.kingSpawned = false;
+    st.kingDefeated = true;
+    st.roundClearTimer = 180;
+    st.lastBossTime = Date.now();
+  });
+
+  // Move pickups down
+  var pickupSpeed = 1.5;
+  st.soldierPickups = (st.soldierPickups || []).filter(function(p) {
+    p.y += pickupSpeed;
+    var dx = p.x - st.squadX, dy = p.y - squadY;
+    if (Math.abs(dx) < 30 && Math.abs(dy) < 30) {
+      var add = 3 + Math.floor(Math.random() * 4);
+      st.soldiers += add;
+      addFloat(p.x, p.y, '+' + add + ' SOLDIER' + (add > 1 ? 'S' : ''), '#44ff88', false);
+      sfxPickup();
+      return false;
+    }
+    return p.y < H + 40;
+  });
+
+  st.weaponPickups = st.weaponPickups.filter(function(p) {
+    p.y += pickupSpeed;
+    var dx = p.x - st.squadX, dy = p.y - squadY;
+    if (Math.abs(dx) < 30 && Math.abs(dy) < 30) {
+      st.currentWeapon = p.weapon;
+      st.weaponTimer = WEAPONS[p.weapon].dur;
+      addFloat(p.x, p.y, WEAPONS[p.weapon].name.toUpperCase() + '!', WEAPONS[p.weapon].color, true);
+      sfxPickup();
+      return false;
+    }
+    return p.y < H + 40;
+  });
+
+  st.lightningPickups = st.lightningPickups.filter(function(p) {
+    p.y += pickupSpeed;
+    var dx = p.x - st.squadX, dy = p.y - squadY;
+    if (Math.abs(dx) < 30 && Math.abs(dy) < 30) {
+      var all = st.zombies.concat(st.bosses);
+      if (all.length > 0) fireLightning(all);
+      addFloat(p.x, p.y, 'LIGHTNING!', '#ffff00', true);
+      sfxPickup();
+      return false;
+    }
+    return p.y < H + 40;
+  });
+
+  // Cars
+  st.cars = st.cars.filter(function(car) {
+    car.x += car.speed;
+    // Bullet hits
+    st.bullets.forEach(function(b, bi) {
+      if (bHits.has('c' + bi)) return;
+      var dx = b.x - car.x, dy = b.y - car.y;
+      if (Math.abs(dx) < 26 && Math.abs(dy) < 16) {
+        car.hp -= 1; bHits.add('c' + bi);
+      }
+    });
+    if (car.hp <= 0) {
+      spawnParticles(car.x, car.y, '#ff6600', 20);
+      addFloat(car.x, car.y, '+500 BOOM!', '#ff6600', true);
+      st.score += 500;
+      return false;
+    }
+    return car.x > -100 && car.x < W + 100;
+  });
+
+  // Airplane + bombs
+  if (st.airPlane) {
+    st.airPlane.x += st.airPlane.speed;
+    if (st.frame % 18 === 0) {
+      st.bombs.push({ x: st.airPlane.x, y: st.airPlane.y, vy: 3 });
+    }
+    if (st.airPlane.x > W + 60) st.airPlane = null;
+  }
+  st.bombs = st.bombs.filter(function(b) {
+    b.y += b.vy; b.vy += 0.15;
+    var allTargets = st.zombies.concat(st.bosses);
+    var hit = false;
+    allTargets.forEach(function(t) {
+      var dx = b.x - t.x, dy = b.y - t.y;
+      if (Math.abs(dx) < 30 && Math.abs(dy) < 30) {
+        t.hp -= 15 * st.zombieHpMult;
+        spawnParticles(t.x, t.y, '#ff6600', 8);
+        hit = true;
+      }
+    });
+    if (b.y > H) {
+      spawnParticles(b.x, b.y, '#ff4400', 12);
+      return false;
+    }
+    return !hit;
+  });
+
+  // Lightning strike effects
+  st.lightningStrikes = st.lightningStrikes.filter(function(ls) {
+    ls.life--;
+    return ls.life > 0;
+  });
+
+  // Particles
+  st.particles = st.particles.filter(function(p) {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.life -= p.decay;
+    return p.life > 0;
+  });
+
+  // Float text
+  st.floats = st.floats.filter(function(f) {
+    f.y += f.vy; f.alpha -= 0.015;
+    return f.alpha > 0;
+  });
+
+  updateAirBtn();
 }
 
-function spawnBoss(){
-const isKing=!state.kingSpawned;
-if(isKing) state.kingSpawned=true;
-const baseHp=100+Math.floor(Math.random()*901);
-const hp=Math.max(1,Math.round(baseHp*state.zombieHpMult));
-state.bosses.push({x:80+Math.random()*(canvas.width-160),y:-60,
-hp,maxHp:hp,speed:0.25+Math.random()*0.2,scale:2.2,
-type:‘boss’,isKing,wobble:0});
+/* =========================================================
+   DRAW
+========================================================= */
+function draw() {
+  var st = gameState;
+  if (!st) return;
+  var squadY = H - 80;
+
+  // Background
+  ctx.fillStyle = '#0a0a0a';
+  ctx.fillRect(0, 0, W, H);
+
+  // Ground line
+  ctx.fillStyle = '#1a2a1a';
+  ctx.fillRect(0, squadY + 20, W, H - squadY - 20);
+  ctx.fillStyle = '#2a3a2a';
+  ctx.fillRect(0, squadY + 18, W, 4);
+
+  // Cars
+  st.cars.forEach(drawCar);
+
+  // Pickups
+  (st.soldierPickups || []).forEach(function(p) { drawPickup(p.x, p.y, 'SOLDIER', '#44ff88'); });
+  st.weaponPickups.forEach(function(p) {
+    var wc = WEAPONS[p.weapon];
+    drawPickup(p.x, p.y, wc.name.slice(0, 2).toUpperCase(), wc.color);
+  });
+  st.lightningPickups.forEach(function(p) { drawPickup(p.x, p.y, 'ZAP', '#ffff44'); });
+
+  // Bullets
+  st.bullets.forEach(drawBullet);
+
+  // Laser beam
+  if (st.currentWeapon === 'laser') {
+    var targets = st.zombies.concat(st.bosses).filter(function(z) { return z.y > 0; });
+    if (targets.length > 0) {
+      targets.sort(function(a, b) { return a.y - b.y; });
+      var lt = targets[0];
+      ctx.save();
+      ctx.strokeStyle = WEAPONS.laser.color;
+      ctx.shadowColor = WEAPONS.laser.glow;
+      ctx.shadowBlur = 16;
+      ctx.lineWidth = 3;
+      ctx.globalAlpha = 0.7 + Math.random() * 0.3;
+      ctx.beginPath();
+      ctx.moveTo(st.squadX, squadY - 10);
+      ctx.lineTo(lt.x, lt.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // Zombies
+  st.zombies.forEach(function(z) {
+    drawZombie(z.x, z.y, 0.85, z.hp, z.maxHp, z.type);
+  });
+
+  // Bosses
+  st.bosses.forEach(function(boss) {
+    drawZombie(boss.x, boss.y, 1.5, boss.hp, boss.maxHp, 'boss');
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 9px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(Math.ceil(boss.hp) + '/' + boss.maxHp, boss.x, boss.y - 62);
+  });
+
+  // Airplane + bombs
+  if (st.airPlane) drawAirplane(st.airPlane);
+  st.bombs.forEach(drawBomb);
+
+  // Lightning effects
+  st.lightningStrikes.forEach(function(ls) {
+    ctx.save();
+    ctx.strokeStyle = '#ffff44';
+    ctx.shadowColor = '#ffff00';
+    ctx.shadowBlur = 20;
+    ctx.lineWidth = 3;
+    ctx.globalAlpha = ls.life / 18;
+    ctx.beginPath();
+    ctx.moveTo(ls.x, 0);
+    ctx.lineTo(ls.x + (Math.random() - 0.5) * 20, ls.y / 2);
+    ctx.lineTo(ls.x, ls.y);
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  // Particles
+  st.particles.forEach(drawParticle);
+
+  // Squad
+  if (st.soldiers > 0) {
+    var maxRow = 12, sp = 14;
+    var cnt = Math.min(st.soldiers, maxRow * 2);
+    var r1 = Math.min(cnt, maxRow), r2 = cnt - r1;
+    for (var i = 0; i < r1; i++) drawSoldier(st.squadX - (r1 - 1) * sp / 2 + i * sp, squadY - 10, 0.75);
+    if (r2 > 0) for (var j = 0; j < r2; j++) drawSoldier(st.squadX - (r2 - 1) * sp / 2 + j * sp, squadY - 26, 0.65);
+    if (st.soldiers > maxRow * 2) {
+      ctx.fillStyle = '#ffe044'; ctx.font = 'bold 11px Arial'; ctx.textAlign = 'center';
+      ctx.fillText('+' + (st.soldiers - maxRow * 2) + ' more', st.squadX, squadY + 14);
+    }
+  }
+
+  // Round clear flash
+  if (st.kingDefeated && st.roundClearTimer > 0) {
+    var a = Math.min(1, st.roundClearTimer / 60) * 0.45;
+    ctx.fillStyle = 'rgba(255,215,0,' + a + ')';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#ffd700'; ctx.font = 'bold 28px Arial Black'; ctx.textAlign = 'center';
+    ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 20;
+    ctx.fillText('ROUND ' + st.round + ' CLEAR!', W / 2, H / 2);
+    ctx.shadowBlur = 0;
+  }
+
+  // Float text
+  st.floats.forEach(function(f) {
+    ctx.save(); ctx.globalAlpha = f.alpha;
+    ctx.fillStyle = f.color; ctx.shadowColor = f.color; ctx.shadowBlur = 10;
+    ctx.font = (f.big ? 'bold 18px' : 'bold 13px') + ' Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(f.text, f.x, f.y);
+    ctx.restore();
+  });
+
+  drawHUD();
 }
 
-function spawnSoldierPickup(){
-state.soldierPickups.push({x:30+Math.random()*(canvas.width*0.45),y:-25,vy:0.7+Math.random()*0.4});
+/* =========================================================
+   GAME OVER
+========================================================= */
+function triggerGameOver() {
+  var st = gameState;
+  st.gameOver = true;
+  st.running = false;
+  document.getElementById('airBtn').style.display = 'none';
+  document.getElementById('cogBtn').style.display = 'none';
+  var m = Math.floor(st.elapsed / 60), s = Math.floor(st.elapsed % 60);
+  document.getElementById('finalStats').innerHTML =
+    '<div class="stat-line">Round: ' + st.round + '</div>' +
+    '<div class="stat-line">Score: ' + st.score.toLocaleString() + '</div>' +
+    '<div class="stat-line">Kills: ' + st.kills + '</div>' +
+    '<div class="stat-line">Bosses: ' + st.bossKills + '</div>' +
+    '<div class="stat-line">Survived: ' + m + 'm ' + s + 's</div>';
+  document.getElementById('gameOverScreen').style.display = 'flex';
+  cancelAnimationFrame(animFrame);
 }
 
-function spawnReinforcement(){
-state.reinforcements.push({x:canvas.width*0.55+Math.random()*(canvas.width*0.4),y:-25,vy:0.7+Math.random()*0.4});
+/* =========================================================
+   GAME LOOP
+========================================================= */
+function loop() {
+  if (!gameState || gameState.gameOver) return;
+  update();
+  draw();
+  animFrame = requestAnimationFrame(loop);
 }
 
-function spawnWeaponPickup(){
-const types=[‘flamethrower’,‘laser’,‘machinegun’];
-state.weaponPickups.push({x:50+Math.random()*(canvas.width-100),y:-30,
-vy:0.5+Math.random()*0.35,weaponType:types[Math.floor(Math.random()*3)]});
+/* =========================================================
+   START GAME
+========================================================= */
+function startGame(prev) {
+  if (animFrame) cancelAnimationFrame(animFrame);
+  gameState = makeState(prev || null);
+  dragX = W / 2;
+  document.getElementById('cogBtn').style.display = 'flex';
+  document.getElementById('airBtn').style.display = 'block';
+  updateAirBtn();
+  loop();
 }
 
-function spawnLightningPickup(){
-state.lightningPickups.push({x:50+Math.random()*(canvas.width-100),y:-30,vy:0.5+Math.random()*0.3});
-}
+/* =========================================================
+   TOUCH / MOUSE INPUT
+========================================================= */
+canvas.addEventListener('touchstart', function(e) {
+  // Only handle game touches (not title screen — title is handled separately)
+  if (!gameState || !gameState.running) return;
+  e.preventDefault();
+  dragX = e.touches[0].clientX;
+}, { passive: false });
 
-function spawnCar(){
-const fromRight=Math.random()<0.5;
-const carType=CAR_TYPES[Math.floor(Math.random()*3)];
-const carY=canvas.height*(0.20+Math.random()*0.60);
-state.cars.push({
-x:fromRight?canvas.width+55:-55,
-y:carY, fromRight,
-targetX:80+Math.random()*(canvas.width-160),
-vx:fromRight?-2.6:2.6,
-carType, hp:50, stopped:false,
-exploding:false, explodeTimer:0
-});
-}
+canvas.addEventListener('touchmove', function(e) {
+  if (!gameState || !gameState.running) return;
+  e.preventDefault();
+  var x = e.touches[0].clientX;
+  if (dragX !== null) gameState.squadX += (x - dragX) * 1.0;
+  gameState.squadX = Math.max(30, Math.min(W - 30, gameState.squadX));
+  dragX = x;
+}, { passive: false });
 
-function spawnParticles(x,y,color,count,glow=0){
-for(let i=0;i<count;i++){
-const a=Math.random()*Math.PI*2, s=1+Math.random()*4;
-state.particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,
-r:2+Math.random()*4,alpha:1,color,decay:0.025+Math.random()*0.035,glow});
-}
-}
+canvas.addEventListener('touchend', function(e) {
+  if (!gameState || !gameState.running) return;
+  dragX = null;
+}, { passive: true });
 
-function addFloat(x,y,text,color,big=false){
-state.floats.push({x,y,text,color,alpha:1,vy:-1.8,life:big?110:65,big});
-}
-
-// ── FIRE / LASER ──────────────────────────────────────────────────────
-function fireBullets(squadY){
-const wDef=WEAPONS[state.currentWeapon];
-if(wDef.continuous) return;
-const spread=Math.min(state.soldiers,15);
-const spacing=Math.min(20,(canvas.width*0.5)/spread);
-for(let i=0;i<spread;i++){
-const bx=state.squadX-(spread-1)*spacing/2+i*spacing;
-state.bullets.push({x:bx,y:squadY-20,vx:wDef.spread?(Math.random()-0.5)*0.8:0,vy:-9,
-weaponType:state.currentWeapon,attack:wDef.attack,range:wDef.range,startY:squadY-20});
-}
-}
-
-function applyLaserDamage(squadY){
-if(state.currentWeapon!==‘laser’||state.weaponTimer<=0||state.frame%3!==0) return;
-const sp=14, cnt=Math.min(state.soldiers,12), tw=(cnt-1)*sp;
-for(let i=0;i<cnt;i++){
-const sx=state.squadX-tw/2+i*sp;
-let target=null, bestY=999999;
-state.zombies.forEach(z=>{if(Math.abs(z.x-sx)<18*z.scale&&z.y<bestY){bestY=z.y;target=z;}});
-state.bosses.forEach(b=>{if(!b.dead&&Math.abs(b.x-sx)<45&&b.y<bestY){bestY=b.y;target=b;}});
-if(target){
-target.hp-=WEAPONS.laser.attack*0.15;
-spawnParticles(target.x,target.y,’#00ffff’,1,6);
-if(target.hp<=0&&!target.dead){
-target.dead=true;
-const pts=target.type===‘boss’?target.maxHp*20:target.type===‘special’?target.maxHp*5:10;
-state.score+=pts; state.kills++;
-spawnParticles(target.x,target.y,’#00ffff’,8,10);
-addFloat(target.x,target.y,`+${pts}`,’#00ffff’);
-if(target.type===‘boss’){state.bossKills++;if(target.isKing)triggerKingDeath();}
-}
-}
-}
-state.zombies=state.zombies.filter(z=>!z.dead);
-state.bosses=state.bosses.filter(b=>!b.dead);
-}
-
-function triggerKingDeath(){
-state.zombies.forEach(z=>spawnParticles(z.x,z.y,’#ff4400’,5));
-state.zombies=[];
-state.bosses.forEach(b=>{if(!b.dead)spawnParticles(b.x,b.y,’#ffd700’,8);});
-state.kingDefeated=true; state.roundClearTimer=180;
-addFloat(canvas.width/2,canvas.height/2,`KING SLAIN! ROUND ${state.round} CLEAR!`,’#ffd700’,true);
-}
-
-// ── AIRSTRIKE ─────────────────────────────────────────────────────────
-function fireAirstrike(){
-if(!state||state.gameOver||state.airstrikes<=0) return;
-state.airstrikes–;
-updateAirBtn();
-// Find 3 biggest zombie clusters
-const targets=[];
-const allTargets=[…state.zombies,…state.bosses];
-if(allTargets.length===0) return;
-// Sort by cluster density — pick 3 random-ish heaviest Y zones
-const sorted=[…allTargets].sort((a,b)=>b.y-a.y);
-const picks=[];
-while(picks.length<3&&sorted.length>0){
-const t=sorted.splice(Math.floor(Math.random()*Math.min(4,sorted.length)),1)[0];
-picks.push(t);
-// Remove nearby to avoid duplicates
-sorted.splice(0,sorted.length,…sorted.filter(z=>Math.abs(z.x-t.x)>60));
-}
-// Spawn airplane
-const fromRight=Math.random()<0.5;
-state.airPlane={
-x:fromRight?canvas.width+60:-60,
-y:60,
-vx:fromRight?-5:5,
-targets:picks.map(t=>({x:t.x,y:t.y})),
-dropped:0,
-dropTimer:0,
-done:false
-};
-}
-
-function strikeLightning(x,y){
-const radius=80;
-state.lightningStrikes.push({x,y,radius,life:30});
-spawnParticles(x,y,’#ffff44’,20,15);
-addFloat(x,y-20,‘ZAP!’,’#ffff44’,true);
-// Damage zombies in radius
-state.zombies=state.zombies.filter(z=>{
-if(Math.hypot(z.x-x,z.y-y)<radius){
-z.hp-=50*state.zombieHpMult;
-if(z.hp<=0){
-const pts=z.type===‘special’?z.maxHp*5:10;
-state.score+=pts; state.kills++;
-spawnParticles(z.x,z.y,’#ffff44’,8,10);
-return false;
-}
-}
-return true;
-});
-state.bosses.forEach(b=>{
-if(!b.dead&&Math.hypot(b.x-x,b.y-y)<radius+30){
-b.hp-=200;
-if(b.hp<=0){b.dead=true;state.bossKills++;state.score+=b.maxHp*20;}
-}
-});
-state.bosses=state.bosses.filter(b=>!b.dead);
-}
-
-// ── UPDATE ────────────────────────────────────────────────────────────
-function update(){
-const now=Date.now();
-const W=canvas.width,H=canvas.height,squadY=H-70;
-state.frame++; state.elapsed=(now-state.startTime)/1000;
-
-// Round clear pause
-if(state.kingDefeated){
-state.roundClearTimer–;
-if(state.roundClearTimer<=0){startGame(state);return;}
-return;
-}
-
-// Squad movement
-state.squadX+=(Math.max(60,Math.min(W-60,mouseX))-state.squadX)*0.12;
-
-// Weapon timer
-if(state.weaponTimer>0){
-state.weaponTimer–;
-if(state.weaponTimer<=0){
-state.currentWeapon=‘bullet’;
-addFloat(state.squadX,squadY-50,‘WEAPON EXPIRED’,’#aaaaaa’);
-}
-}
-
-// Fire
-const wDef=WEAPONS[state.currentWeapon];
-state.fireTimer++;
-if(state.fireTimer>=wDef.rate&&state.soldiers>0){state.fireTimer=0;fireBullets(squadY);}
-applyLaserDamage(squadY);
-
-// Bullets
-state.bullets=state.bullets.filter(b=>{
-b.x+=b.vx; b.y+=b.vy;
-return b.y>-10&&(b.startY-b.y)<b.range;
-});
-
-// Spawners
-if(now-state.lastZombieTime>1200){
-state.lastZombieTime=now;
-const cnt=Math.min(Math.pow(2,Math.floor(state.elapsed/10)),80);
-for(let i=0;i<cnt;i++) spawnZombie();
-}
-if(now-state.lastBossTime>60000){
-state.lastBossTime=now; spawnBoss();
-addFloat(W/2,H/2,‘BOSS INCOMING!’,’#ff4444’,true);
-}
-if(now-state.lastSoldierPickupTime>8000){state.lastSoldierPickupTime=now;spawnSoldierPickup();}
-if(state.elapsed>=60){
-if(!state.reinforcementsStarted){
-state.reinforcementsStarted=true;state.lastReinfTime=now;
-spawnReinforcement();
-addFloat(W/2,H/2+40,’+10 REINFORCEMENTS!’,’#44aaff’,true);
-}
-if(now-state.lastReinfTime>15000){state.lastReinfTime=now;spawnReinforcement();}
-}
-if(now-state.lastWeaponPickupTime>18000){state.lastWeaponPickupTime=now;spawnWeaponPickup();}
-if(now-state.lastLightningPickupTime>22000){state.lastLightningPickupTime=now;spawnLightningPickup();}
-if(now-state.lastCarTime>25000){state.lastCarTime=now;spawnCar();}
-
-// Airstrike score threshold
-if(state.score>=state.airstrikeThreshold){
-state.airstrikes++;
-state.airstrikeThreshold+=20000;
-addFloat(W/2,H/2-40,‘AIRSTRIKE AWARDED!’,’#ff4400’,true);
-updateAirBtn();
-}
-
-// Move zombies/bosses
-state.zombies.forEach(z=>{z.wobble+=0.1;z.x+=Math.sin(z.wobble*0.5)*0.3;z.y+=z.speed;});
-state.bosses.forEach(b=>{b.wobble+=0.05;b.y+=b.speed;});
-
-// Airplane update
-if(state.airPlane){
-const plane=state.airPlane;
-plane.x+=plane.vx;
-plane.dropTimer++;
-// Drop bombs on targets
-if(plane.dropped<plane.targets.length&&plane.dropTimer>15){
-const t=plane.targets[plane.dropped];
-if(Math.abs(plane.x-t.x)<60){
-state.bombs.push({x:plane.x,y:plane.y,tx:t.x,ty:t.y,vx:(t.x-plane.x)*0.04,vy:4});
-plane.dropped++;
-plane.dropTimer=0;
-}
-}
-if(plane.x<-100||plane.x>W+100) state.airPlane=null;
-}
-
-// Bomb update
-state.bombs=state.bombs.filter(bomb=>{
-bomb.x+=bomb.vx; bomb.y+=bomb.vy;
-if(bomb.y>=bomb.ty||bomb.y>H){
-// Explode
-const blastR=120;
-spawnParticles(bomb.x,bomb.y,’#ff6600’,25,12);
-spawnParticles(bomb.x,bomb.y,’#ffdd00’,15,8);
-addFloat(bomb.x,bomb.y-20,‘BOOM!’,’#ff4400’,true);
-state.zombies=state.zombies.filter(z=>{
-if(Math.hypot(z.x-bomb.x,z.y-bomb.y)<blastR){
-const pts=z.type===‘special’?z.maxHp*5:10;
-state.score+=pts;state.kills++;
-spawnParticles(z.x,z.y,’#ff4400’,5);
-return false;
-}
-return true;
-});
-state.bosses.forEach(b=>{
-if(!b.dead&&Math.hypot(b.x-bomb.x,b.y-bomb.y)<blastR){
-b.hp-=300;if(b.hp<=0){b.dead=true;state.bossKills++;state.score+=b.maxHp*20;}
-}
-});
-state.bosses=state.bosses.filter(b=>!b.dead);
-return false;
-}
-return true;
-});
-
-// Lightning strikes decay
-state.lightningStrikes=state.lightningStrikes.filter(ls=>{ls.life–;return ls.life>0;});
-
-// Bullet collisions
-const bRem=new Set(),zRem=new Set();
-state.bullets.forEach((b,bi)=>{
-state.zombies.forEach((z,zi)=>{
-const zr=18*z.scale;
-if(Math.abs(b.x-z.x)<zr&&Math.abs(b.y-(z.y-10))<zr+10){
-bRem.add(bi); z.hp-=b.attack;
-if(z.hp<=0){
-zRem.add(zi);
-const pts=z.type===‘special’?z.maxHp*5:10;
-state.score+=pts;state.kills++;
-spawnParticles(z.x,z.y,z.type===‘special’?’#cc44ff’:’#44ff88’,7);
-addFloat(z.x,z.y-10,`+${pts}`,z.type===‘special’?’#cc44ff’:’#44ff88’);
-} else {
-spawnParticles(z.x,z.y,b.weaponType===‘flamethrower’?’#ff6600’:’#ff6622’,3);
-}
-}
-});
-state.bosses.forEach(boss=>{
-if(boss.dead) return;
-if(Math.abs(b.x-boss.x)<46&&Math.abs(b.y-boss.y)<52){
-bRem.add(bi); boss.hp-=b.attack;
-spawnParticles(boss.x+Math.random()*20-10,boss.y,’#ff9900’,2);
-if(boss.hp<=0){
-boss.dead=true;state.bossKills++;state.score+=boss.maxHp*20;
-spawnParticles(boss.x,boss.y,’#ffd700’,22,10);
-if(boss.isKing)triggerKingDeath();
-else addFloat(boss.x,boss.y-30,`BOSS SLAIN! +${boss.maxHp*20}`,’#ffd700’,true);
-}
-}
-});
-state.cars.forEach(car=>{
-if(car.exploding) return;
-if(Math.abs(b.x-car.x)<50&&Math.abs(b.y-car.y)<28){
-bRem.add(bi); car.hp–;
-spawnParticles(b.x,b.y,’#ffaa00’,3);
-if(car.hp<=0){
-car.exploding=true;car.explodeTimer=60;
-addFloat(car.x,car.y-45,‘BOOM!’,’#ff6600’,true);
-const blastR=130;
-state.zombies=state.zombies.filter(z=>{
-if(Math.hypot(z.x-car.x,z.y-car.y)<blastR){
-const pts=z.type===‘special’?z.maxHp*5:10;
-state.score+=pts;state.kills++;
-spawnParticles(z.x,z.y,’#ff6600’,6);
-return false;
-}
-return true;
-});
-state.bosses.forEach(boss=>{
-if(!boss.dead&&Math.hypot(boss.x-car.x,boss.y-car.y)<blastR){
-boss.hp-=200;if(boss.hp<=0){boss.dead=true;state.bossKills++;}
-}
-});
-state.bosses=state.bosses.filter(b2=>!b2.dead);
-}
-}
-});
-});
-state.bullets=state.bullets.filter((*,i)=>!bRem.has(i));
-state.zombies=state.zombies.filter((*,i)=>!zRem.has(i));
-state.bosses=state.bosses.filter(b=>!b.dead);
-
-// Zombies reach squad
-const eatY=squadY-10;
-state.zombies=state.zombies.filter(z=>{
-if(z.y>=eatY){state.soldiers=Math.max(0,state.soldiers-1);spawnParticles(z.x,eatY,’#ff2222’,8);addFloat(z.x,eatY,’-1’,’#ff4444’);return false;}
-return true;
-});
-state.bosses=state.bosses.filter(b=>{
-if(b.y>=eatY){const ate=Math.min(state.soldiers,5);state.soldiers=Math.max(0,state.soldiers-ate);spawnParticles(b.x,eatY,’#ff2222’,16);addFloat(b.x,eatY,`-${ate}`,’#ff0000’);return false;}
-return true;
-});
-
-// Helper: check if any soldier is within range of a pickup
-function soldierNear(px, py, range) {
-const maxR=12, sp=14, cnt=Math.min(state.soldiers,maxR*2);
-const r1=Math.min(cnt,maxR), r2=cnt-r1;
-for(let i=0;i<r1;i++){
-const sx=state.squadX-(r1-1)*sp/2+i*sp, sy=squadY-10;
-if(Math.hypot(px-sx,py-sy)<range) return true;
-}
-for(let i=0;i<r2;i++){
-const sx=state.squadX-(r2-1)*sp/2+i*sp, sy=squadY-26;
-if(Math.hypot(px-sx,py-sy)<range) return true;
-}
-return false;
-}
-
-// Soldier pickups — must be touched by a soldier to collect
-state.soldierPickups=state.soldierPickups.filter(p=>{
-p.y+=p.vy;
-if(soldierNear(p.x,p.y,36)){
-const b=state.elapsed>=60?10:1;
-state.soldiers+=b;
-addFloat(p.x,p.y,`+${b} SOLDIERS`,’#44ff88’);
-spawnParticles(p.x,p.y,’#44ff88’,7);
-return false;
-}
-return p.y<H+30;
-});
-state.reinforcements=state.reinforcements.filter(r=>{
-r.y+=r.vy;
-if(soldierNear(r.x,r.y,36)){
-state.soldiers+=10;
-addFloat(r.x,r.y,’+10 SOLDIERS’,’#44aaff’);
-spawnParticles(r.x,r.y,’#44aaff’,14);
-return false;
-}
-return r.y<H+30;
-});
-state.weaponPickups=state.weaponPickups.filter(p=>{
-p.y+=p.vy;
-if(soldierNear(p.x,p.y,36)){
-state.currentWeapon=p.weaponType;state.weaponTimer=WEAPONS[p.weaponType].dur;state.fireTimer=0;
-const w=WEAPONS[p.weaponType];
-addFloat(p.x,p.y-20,`${w.name.toUpperCase()} ACTIVATED!`,w.color,true);
-spawnParticles(p.x,p.y,w.glow,16,12);
-return false;
-}
-return p.y<H+30;
-});
-
-// Lightning pickups — must be touched by a soldier
-state.lightningPickups=state.lightningPickups.filter(p=>{
-p.y+=p.vy;
-if(soldierNear(p.x,p.y,36)){
-const pool=[…state.zombies,…state.bosses];
-const picked=[];
-while(picked.length<3&&pool.length>0){
-picked.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
-}
-while(picked.length<3){
-picked.push({x:50+Math.random()*(W-100),y:50+Math.random()*(H*0.6)});
-}
-picked.forEach(t=>strikeLightning(t.x,t.y));
-addFloat(p.x,p.y-30,’*** LIGHTNING! ***’,’#ffff00’,true);
-return false;
-}
-return p.y<H+30;
-});
-
-// Cars
-state.cars=state.cars.filter(car=>{
-if(car.exploding){
-car.explodeTimer–;
-spawnParticles(car.x+(Math.random()-0.5)*50,car.y+(Math.random()-0.5)*25,
-Math.random()>0.5?’#ff6600’:’#ffcc00’,2,8);
-return car.explodeTimer>0;
-}
-if(!car.stopped){
-car.x+=car.vx;
-const dist=Math.abs(car.x-car.targetX);
-if(dist<100) car.vx*=0.94;
-if(dist<6){car.stopped=true;car.vx=0;}
-// Crush zombies while moving
-state.zombies=state.zombies.filter(z=>{
-if(Math.abs(z.x-car.x)<48&&Math.abs(z.y-car.y)<22){
-const pts=z.type===‘special’?z.maxHp*5:10;
-state.score+=pts;state.kills++;
-spawnParticles(z.x,z.y,’#ff4400’,6);
-addFloat(z.x,z.y-10,`+${pts}`,’#ff6600’);
-return false;
-}
-return true;
-});
-}
-return true;
+canvas.addEventListener('mousemove', function(e) {
+  if (!gameState || !gameState.running) return;
+  gameState.squadX = e.clientX;
 });
 
-// Particles + floats
-state.particles=state.particles.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.08;p.alpha-=p.decay;return p.alpha>0;});
-state.floats=state.floats.filter(f=>{f.y+=f.vy;f.alpha-=1/f.life;f.life–;return f.life>0;});
-
-// Update airstrike button
-updateAirBtn();
-
-if(state.soldiers<=0){state.gameOver=true;airBtn.style.display=‘none’;showGameOver();}
-}
-
-// ── DRAW ──────────────────────────────────────────────────────────────
-function draw(){
-const W=canvas.width,H=canvas.height,squadY=H-70;
-
-// BG
-const sky=ctx.createLinearGradient(0,0,0,H);
-sky.addColorStop(0,’#0d0020’);sky.addColorStop(0.6,’#1a0a2e’);sky.addColorStop(1,’#2a1a0a’);
-ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
-ctx.fillStyle=‘rgba(255,255,255,0.4)’;
-for(let i=0;i<40;i++){ctx.beginPath();ctx.arc((i*137+13)%W,(i*97+7)%(H*0.55),0.8,0,Math.PI*2);ctx.fill();}
-const gnd=ctx.createLinearGradient(0,H-44,0,H);
-gnd.addColorStop(0,’#2d4a1a’);gnd.addColorStop(1,’#1a2d0a’);
-ctx.fillStyle=gnd;ctx.fillRect(0,H-44,W,44);
-
-// Danger line
-ctx.strokeStyle=‘rgba(255,80,80,0.22)’;ctx.lineWidth=1;ctx.setLineDash([8,6]);
-ctx.beginPath();ctx.moveTo(0,squadY-10);ctx.lineTo(W,squadY-10);ctx.stroke();
-ctx.setLineDash([]);
-
-// Cars
-state.cars.forEach(car=>{if(car.exploding)drawExplosionEffect(car);else drawCar(car);});
-
-// Pickups
-state.soldierPickups.forEach(p=>drawSoldierPickup(p.x,p.y));
-state.reinforcements.forEach(r=>drawReinfPickup(r.x,r.y));
-state.weaponPickups.forEach(p=>drawWeaponPickup(p));
-state.lightningPickups.forEach(p=>drawLightningPickup(p));
-
-// Bullets
-state.bullets.forEach(b=>drawBulletProj(b));
-drawLaserBeams(squadY);
-
-// Lightning effects
-state.lightningStrikes.forEach(ls=>drawLightningEffect(ls));
-
-// Zombies + bosses
-state.zombies.forEach(z=>drawZombie(z.x,z.y,z.scale,z.hp,z.maxHp,z.type));
-state.bosses.forEach(boss=>{
-drawZombie(boss.x,boss.y,boss.scale,boss.hp,boss.maxHp,‘boss’);
-const bW=80,bf=(boss.hp/boss.maxHp)*bW;
-ctx.fillStyle=’#111’;ctx.beginPath();rr(ctx,boss.x-bW/2,boss.y-68,bW,10,3);ctx.fill();
-const pc=boss.hp/boss.maxHp;
-ctx.fillStyle=pc>.5?’#44ff44’:pc>.25?’#ffaa00’:’#ff2222’;
-ctx.beginPath();rr(ctx,boss.x-bW/2,boss.y-68,Math.max(0,bf),10,3);ctx.fill();
-ctx.strokeStyle=’#555’;ctx.lineWidth=1;ctx.beginPath();rr(ctx,boss.x-bW/2,boss.y-68,bW,10,3);ctx.stroke();
-ctx.fillStyle=’#fff’;ctx.font=‘bold 9px Arial’;ctx.textAlign=‘center’;
-ctx.fillText(`${boss.hp}/${boss.maxHp}`,boss.x,boss.y-60);
-});
-
-// Airplane + bombs
-if(state.airPlane) drawAirplane(state.airPlane);
-state.bombs.forEach(bomb=>drawBomb(bomb));
-
-// Particles
-state.particles.forEach(drawParticle);
-
-// Squad
-if(state.soldiers>0){
-const maxR=12,sp=14,cnt=Math.min(state.soldiers,maxR*2);
-const r1=Math.min(cnt,maxR),r2=cnt-r1;
-for(let i=0;i<r1;i++) drawSoldier(state.squadX-(r1-1)*sp/2+i*sp,squadY-10,0.75);
-if(r2>0) for(let i=0;i<r2;i++) drawSoldier(state.squadX-(r2-1)*sp/2+i*sp,squadY-26,0.65);
-if(state.soldiers>maxR*2){
-ctx.fillStyle=’#ffe044’;ctx.font=‘bold 11px Arial’;ctx.textAlign=‘center’;
-ctx.fillText(`+${state.soldiers-maxR*2} more`,state.squadX,squadY+14);
-}
-}
-
-// Round clear flash
-if(state.kingDefeated){
-const a=Math.min(1,state.roundClearTimer/60)*0.5;
-ctx.fillStyle=`rgba(255,215,0,${a})`;ctx.fillRect(0,0,W,H);
-}
-
-// Floats
-state.floats.forEach(f=>{
-ctx.save();ctx.globalAlpha=f.alpha;ctx.fillStyle=f.color;
-ctx.font=f.big?‘bold 18px Arial’:‘bold 13px Arial’;
-ctx.textAlign=‘center’;ctx.shadowColor=f.color;ctx.shadowBlur=10;
-ctx.fillText(f.text,f.x,f.y);ctx.restore();
-});
-
-drawHUD(W,H);
-}
-
-// ── HUD ───────────────────────────────────────────────────────────────
-function drawHUD(W,H){
-const fs=Math.max(10,Math.min(13,W/70)),pad=8,barH=58;
-ctx.fillStyle=‘rgba(0,0,0,0.60)’;
-ctx.beginPath();rr(ctx,pad,pad,W-pad*2,barH,7);ctx.fill();
-
-ctx.font=`bold ${fs}px Arial`;
-ctx.fillStyle=’#44ff88’;ctx.shadowColor=’#44ff88’;ctx.shadowBlur=4;
-ctx.textAlign=‘left’;ctx.fillText(`[S] ${state.soldiers}`,pad+10,pad+20);ctx.shadowBlur=0;
-ctx.fillStyle=’#ffe044’;ctx.shadowColor=’#ffe044’;ctx.shadowBlur=4;
-ctx.textAlign=‘center’;ctx.fillText(`* ${state.score.toLocaleString()}`,W/2,pad+20);ctx.shadowBlur=0;
-ctx.fillStyle=’#aaddff’;ctx.textAlign=‘right’;
-const m=Math.floor(state.elapsed/60),s=Math.floor(state.elapsed%60).toString().padStart(2,‘0’);
-ctx.fillText(`${m}:${s}`,W-pad-10,pad+20);
-
-const fs2=Math.max(9,Math.min(11,W/82));
-ctx.font=`bold ${fs2}px Arial`;
-ctx.fillStyle=’#ffd700’;ctx.shadowColor=’#ffd700’;ctx.shadowBlur=3;
-ctx.textAlign=‘left’;ctx.fillText(`R${state.round} x${state.zombieHpMult}HP`,pad+10,pad+46);ctx.shadowBlur=0;
-
-if(state.currentWeapon!==‘bullet’&&state.weaponTimer>0){
-const w=WEAPONS[state.currentWeapon],sec=Math.ceil(state.weaponTimer/60);
-ctx.fillStyle=w.color;ctx.shadowColor=w.glow;ctx.shadowBlur=6;
-ctx.textAlign=‘center’;ctx.fillText(`${w.name.toUpperCase()} ${sec}s`,W/2,pad+46);ctx.shadowBlur=0;
-const bW=Math.min(110,W*0.25),bf=w.dur>0?(state.weaponTimer/w.dur)*bW:0;
-ctx.fillStyle=’#333’;ctx.fillRect(W/2-bW/2,pad+49,bW,4);
-ctx.fillStyle=w.color;ctx.fillRect(W/2-bW/2,pad+49,Math.max(0,bf),4);
-} else if(!state.reinforcementsStarted){
-const t=Math.max(0,60-state.elapsed);
-ctx.fillStyle=’#44aaff’;ctx.textAlign=‘center’;
-ctx.fillText(`+10 REINF in ${Math.ceil(t)}s`,W/2,pad+46);
-} else {
-ctx.fillStyle=’#cc88ff’;ctx.textAlign=‘center’;
-ctx.fillText(`${state.kills} kills | B:${state.bossKills}`,W/2,pad+46);
-}
-
-const tSince=(Date.now()-state.lastBossTime)/1000,nb=Math.max(0,60-tSince);
-ctx.fillStyle=nb<10?’#ff4444’:’#ffaa44’;ctx.textAlign=‘right’;
-ctx.fillText(`${state.kingSpawned?'BOSS':'KING'} ${Math.ceil(nb)}s`,W-pad-10,pad+46);
-}
-
-// ── LOOP ──────────────────────────────────────────────────────────────
-function loop(){
-if(state.gameOver) return;
-update();draw();
-animFrame=requestAnimationFrame(loop);
-}
-
-function startGame(prev){
-console.log(‘startGame called, _starting=’+_starting);
-if(_starting) return; _starting=true; setTimeout(()=>_starting=false,500);
-document.getElementById(‘startScreen’).style.display=‘none’;
-document.getElementById(‘gameOverScreen’).style.display=‘none’;
-document.getElementById(‘overlay’).style.display=‘none’;
-document.getElementById(‘gameCanvas’).style.pointerEvents=‘auto’;
-document.getElementById(‘cogBtn’).style.display=‘flex’;
-mouseX=canvas.width/2;
-console.log(’canvas size: ’+canvas.width+‘x’+canvas.height);
-if(animFrame) cancelAnimationFrame(animFrame);
-initState(prev||null);
-console.log(‘initState done’);
-loop();
-console.log(‘loop started’);
-// Start music when game starts
-if(ytPlayer && ytPlayer.unMute){
-ytPlayer.unMute();
-ytPlayer.setVolume(Math.round(musicVolume*100));
-ytPlayer.playVideo();
-document.getElementById(‘musicStatus’).textContent=‘Playing’;
-} else {
-ytPendingPlay = true;
-}
-}
-
-function showGameOver(){
-document.getElementById(‘overlay’).style.display=‘flex’;
-document.getElementById(‘gameOverScreen’).style.display=‘block’;
-const m=Math.floor(state.elapsed/60),s=Math.floor(state.elapsed%60);
-document.getElementById(‘finalStats’).innerHTML=` <div class="stat-line">Round: ${state.round}</div> <div class="stat-line">⭐ Score: ${state.score.toLocaleString()}</div> <div class="stat-line">Kills: ${state.kills}</div> <div class="stat-line">Bosses Slain: ${state.bossKills}</div> <div class="stat-line">⏱ Survived: ${m}m ${s}s</div>`;
-}
 </script>
 
-<!-- YouTube IFrame API callback — must be global -->
+<!-- YouTube IFrame API — must be global scope -->
 
 <script>
-var ytReady=false;
+var ytReady = false;
+var ytPendingPlay = false;
 
-function onYouTubeIframeAPIReady(){
-  ytReady=true;
-  var url=document.getElementById('ytInput').value.trim()||DEFAULT_YT;
-  var info=ytExtract(url);
-  if(!info) return;
-  var pvars={autoplay:1,playsinline:1,controls:0,mute:1,origin:window.location.origin};
-  var vidId=undefined;
-  if(info.type==='playlist'){pvars.listType='playlist';pvars.list=info.id;pvars.shuffle=1;}
-  else{vidId=info.id;pvars.loop=1;pvars.playlist=info.id;}
-  var cfg={
-    height:'200',width:'200',
-    playerVars:pvars,
-    events:{
-      onReady:function(e){
-        e.target.setVolume(Math.round(musicVolume*100));
-        if(ytPendingPlay){
-          e.target.unMute();e.target.playVideo();
-          ytPendingPlay=false;
-          document.getElementById('musicStatus').textContent='Playing';
+function onYouTubeIframeAPIReady() {
+  ytReady = true;
+  var url = document.getElementById('ytInput').value.trim() || 'https://youtu.be/XMcbjp4Sq4M';
+  var info = ytExtract(url);
+  if (!info) return;
+  var pvars = { autoplay: 1, playsinline: 1, controls: 0, mute: 1, origin: window.location.origin };
+  var vidId;
+  if (info.type === 'playlist') { pvars.listType = 'playlist'; pvars.list = info.id; pvars.shuffle = 1; }
+  else { vidId = info.id; pvars.loop = 1; pvars.playlist = info.id; }
+  var cfg = {
+    height: '200', width: '200', playerVars: pvars,
+    events: {
+      onReady: function(e) {
+        e.target.setVolume(Math.round(musicVolume * 100));
+        if (ytPendingPlay) {
+          e.target.unMute(); e.target.playVideo();
+          ytPendingPlay = false;
+          document.getElementById('musicStatus').textContent = 'Playing';
         }
       },
-      onStateChange:function(e){
-        if(e.data===YT.PlayerState.ENDED||e.data===YT.PlayerState.UNSTARTED) e.target.playVideo();
+      onStateChange: function(e) {
+        if (e.data === YT.PlayerState.ENDED || e.data === YT.PlayerState.UNSTARTED) e.target.playVideo();
       }
     }
   };
-  if(vidId) cfg.videoId=vidId;
-  ytPlayer=new YT.Player('ytPlayerContainer',cfg);
+  if (vidId) cfg.videoId = vidId;
+  ytPlayer = new YT.Player('ytPlayerContainer', cfg);
 }
 </script>
 

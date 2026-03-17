@@ -921,8 +921,12 @@ function spawnZombie() {
 
 function spawnBoss() {
   var st = gameState;
-  var hp = 100 * Math.pow(2, st.round - 1);
-  st.bosses.push({ x: W / 2 + (Math.random() - 0.5) * W * 0.3, y: -90, hp: hp, maxHp: hp, speed: 0.5 + (st.round - 1) * 0.08, type: 'boss', immune: true });
+  // In survival mode cap HP so kings die in reasonable time
+  var survivalHp = [1000, 2000, 4000, 8000, 16000, 32000];
+  var slot = st.survivalMode ? Math.min(st.lastSurvivalSlot || 0, 5) : 0;
+  var hp = st.survivalMode ? survivalHp[slot] : 100 * Math.pow(2, st.round - 1);
+  var spd = st.survivalMode ? 1.2 : 0.5 + (st.round - 1) * 0.08;
+  st.bosses.push({ x: W * 0.1 + Math.random() * W * 0.8, y: -90, hp: hp, maxHp: hp, speed: spd, type: 'boss', immune: true });
   st.kingSpawned = true;
 }
 
@@ -1275,7 +1279,8 @@ function update() {
     if (!st.lastSurvivalSlot) st.lastSurvivalSlot = -1;
     if (spawnSlot > st.lastSurvivalSlot) {
       st.lastSurvivalSlot = spawnSlot;
-      var count = Math.pow(2, spawnSlot); // 1,2,4,8,16,32
+      var survivalCounts = [1, 2, 4, 6, 8, 12];
+      var count = survivalCounts[Math.min(spawnSlot, survivalCounts.length - 1)];
       for (var ks = 0; ks < count; ks++) spawnBoss();
       addFloat(W/2, H*0.35, count + ' ZOMBIE KING' + (count>1?'S':'') + '!', '#ffd700', true);
     }

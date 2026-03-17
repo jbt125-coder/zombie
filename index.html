@@ -279,10 +279,14 @@ const r=canvas.getBoundingClientRect(); mouseX=e.clientX-r.left;
 });
 canvas.addEventListener(‘touchmove’, e=>{
 const ov=document.getElementById(‘overlay’);
+const ts=document.getElementById(‘titleScreen’);
+if(ts && ts.style.display!==‘none’) return;
 if(ov && ov.style.display===‘none’){ e.preventDefault(); mouseX=getTouchX(e); }
 },{passive:false});
 canvas.addEventListener(‘touchstart’, e=>{
 const ov=document.getElementById(‘overlay’);
+const ts=document.getElementById(‘titleScreen’);
+if(ts && ts.style.display!==‘none’) return;
 if(ov && ov.style.display===‘none’){ e.preventDefault(); mouseX=getTouchX(e); }
 },{passive:false});
 

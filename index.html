@@ -17,7 +17,7 @@
     display:flex; align-items:center; justify-content:center; }
   #gameCanvas { display:block; touch-action:none; pointer-events:none; }
   #overlay { position:fixed; top:0; left:0; width:100%; height:100%;
-    display:flex; align-items:center; justify-content:center;
+    align-items:center; justify-content:center;
     z-index:20; }
   #startScreen,#gameOverScreen {
     background:rgba(10,5,20,0.95); border:2px solid #ff6b35; border-radius:14px;
@@ -42,7 +42,7 @@
 #cogBtn{position:fixed;bottom:18px;left:18px;z-index:30;pointer-events:auto;
 background:rgba(10,5,20,0.85);border:1px solid rgba(255,107,53,0.5);
 border-radius:50%;width:42px;height:42px;font-size:18px;
-color:rgba(255,107,53,0.8);cursor:pointer;display:flex;
+color:rgba(255,107,53,0.8);cursor:pointer;
 align-items:center;justify-content:center;
 -webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 #cogMenuOverlay{position:fixed;top:0;left:0;width:100%;height:100%;
@@ -76,14 +76,14 @@ border-radius:50%;background:#ff6b35;cursor:pointer;}
 #ytPlayerContainer{position:fixed;left:-220px;bottom:0;width:200px;height:200px;pointer-events:none;}
 
 /* Title screen */
-#titleScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 45%,#3a0000 0%,#1a0000 40%,#000 100%);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
-#titleLogo{font-family:‘Arial Black’,Arial,sans-serif;font-size:clamp(42px,12vw,80px);font-weight:900;text-align:center;line-height:1.05;background:linear-gradient(135deg,#ff2200,#ffaa00,#ff4400);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px rgba(255,80,0,0.8));letter-spacing:2px;}
-#titleSub{font-family:‘Arial Black’,Arial,sans-serif;font-size:clamp(9px,2.5vw,13px);color:rgba(255,160,80,0.7);letter-spacing:3px;margin-top:14px;text-align:center;}
-#titleTapHint{font-family:‘Arial Black’,Arial,sans-serif;font-size:clamp(10px,3vw,13px);letter-spacing:4px;color:rgba(255,200,0,0.85);margin-top:25vh;animation:blink 1.4s ease-in-out infinite;text-align:center;}
+#titleScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 45%,#3a0000 0%,#1a0000 40%,#000 100%);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
+#titleLogo{font-family:‘Arial Black’,Arial,sans-serif;font-size:clamp(42px,12vw,80px);font-weight:900;text-align:center;line-height:1.05;background:linear-gradient(135deg,#ff2200,#ffaa00,#ff4400);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px rgba(255,80,0,0.8));letter-spacing:2px;pointer-events:none;}
+#titleSub{font-family:‘Arial Black’,Arial,sans-serif;font-size:clamp(9px,2.5vw,13px);color:rgba(255,160,80,0.7);letter-spacing:3px;margin-top:14px;text-align:center;pointer-events:none;}
+#titleTapHint{font-family:‘Arial Black’,Arial,sans-serif;font-size:clamp(10px,3vw,13px);letter-spacing:4px;color:rgba(255,200,0,0.85);margin-top:25vh;animation:blink 1.4s ease-in-out infinite;text-align:center;pointer-events:none;}
 @keyframes blink{0%,100%{opacity:0.25;}50%{opacity:1;}}
 
 /* Audio perm modal */
-#audioPermModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;}
+#audioPermModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
 #audioPermCard{background:rgba(10,5,20,0.99);border:2px solid rgba(255,107,53,0.5);border-radius:16px;padding:28px 26px;max-width:340px;width:100%;text-align:center;}
 #audioPermCard h2{font-size:13px;letter-spacing:4px;color:#ff6b35;margin-bottom:12px;font-family:‘Arial Black’,Arial,sans-serif;}
 #audioPermCard p{font-size:10px;color:rgba(200,180,160,0.75);line-height:1.8;margin-bottom:8px;}
@@ -98,7 +98,7 @@ border-radius:50%;background:#ff6b35;cursor:pointer;}
 <body>
 <canvas id="gameCanvas"></canvas>
 <!-- Cog / Music settings button -->
-<button id="cogBtn">&#9881;</button>
+<button id="cogBtn" style="display:none;">&#9881;</button>
 
 <!-- Music settings overlay -->
 
@@ -147,7 +147,7 @@ border-radius:50%;background:#ff6b35;cursor:pointer;}
 </div>
 
 <div id="overlay" style="display:none;">
-  <div id="startScreen">
+  <div id="startScreen" style="display:none;">
     <h1>☠ ZOMBIE HORDE</h1>
     <p class="subtitle">
       👆 Drag LEFT/RIGHT to steer your squad<br>
@@ -223,30 +223,38 @@ document.getElementById(‘sfxVol’).addEventListener(‘input’, function(){s
 // ── TITLE SCREEN ──────────────────────────────────────────────────────
 (function(){
 var ts = document.getElementById(‘titleScreen’);
+var titleDone = false;
 function proceed(){
-ts.style.transition = ‘opacity 0.4s’;
+if(titleDone) return; titleDone = true;
+ts.style.transition = ‘opacity 0.5s’;
 ts.style.opacity = ‘0’;
-ts.style.pointerEvents = ‘none’;
 setTimeout(function(){
 ts.style.display = ‘none’;
-document.getElementById(‘audioPermModal’).style.display = ‘flex’;
-}, 420);
+var apm = document.getElementById(‘audioPermModal’);
+apm.style.display = ‘flex’;
+}, 500);
 }
+ts.addEventListener(‘touchstart’, function(e){ e.preventDefault(); proceed(); }, {passive:false});
 ts.addEventListener(‘click’, proceed);
-ts.addEventListener(‘touchend’, function(e){ e.preventDefault(); proceed(); }, {passive:false});
 })();
 
 // ── AUDIO PERMISSION MODAL ────────────────────────────────────────────
-document.getElementById(‘enableAudioBtn’).addEventListener(‘click’,function(){
-if(ytPlayer&&ytPlayer.unMute){
-ytPlayer.unMute();ytPlayer.setVolume(Math.round(musicVolume*100));ytPlayer.playVideo();
-document.getElementById(‘musicStatus’).textContent=‘Playing’;
-} else { ytPendingPlay=true; }
-document.getElementById(‘audioPermModal’).style.display=‘none’;
+var audioCtx = null;
+var audioUnlocked = false;
+
+document.getElementById(‘enableAudioBtn’).addEventListener(‘click’, function(){
+if(!audioCtx){try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+if(audioCtx && audioCtx.state===‘suspended’) audioCtx.resume();
+audioUnlocked = true;
+if(ytPlayer && ytPlayer.unMute){
+ytPlayer.unMute(); ytPlayer.setVolume(Math.round(musicVolume*100)); ytPlayer.playVideo();
+document.getElementById(‘musicStatus’).textContent = ‘Playing’;
+} else { ytPendingPlay = true; }
+document.getElementById(‘audioPermModal’).style.display = ‘none’;
 startGame();
 });
-document.getElementById(‘skipAudioBtn’).addEventListener(‘click’,function(){
-document.getElementById(‘audioPermModal’).style.display=‘none’;
+document.getElementById(‘skipAudioBtn’).addEventListener(‘click’, function(){
+document.getElementById(‘audioPermModal’).style.display = ‘none’;
 startGame();
 });
 
@@ -1289,15 +1297,20 @@ animFrame=requestAnimationFrame(loop);
 }
 
 function startGame(prev){
+console.log(‘startGame called, _starting=’+_starting);
 if(_starting) return; _starting=true; setTimeout(()=>_starting=false,500);
 document.getElementById(‘startScreen’).style.display=‘none’;
 document.getElementById(‘gameOverScreen’).style.display=‘none’;
 document.getElementById(‘overlay’).style.display=‘none’;
 document.getElementById(‘gameCanvas’).style.pointerEvents=‘auto’;
+document.getElementById(‘cogBtn’).style.display=‘flex’;
 mouseX=canvas.width/2;
+console.log(’canvas size: ’+canvas.width+‘x’+canvas.height);
 if(animFrame) cancelAnimationFrame(animFrame);
 initState(prev||null);
+console.log(‘initState done’);
 loop();
+console.log(‘loop started’);
 // Start music when game starts
 if(ytPlayer && ytPlayer.unMute){
 ytPlayer.unMute();

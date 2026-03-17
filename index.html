@@ -74,6 +74,23 @@ background:rgba(255,107,53,0.25);outline:none;}
 .volSlider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
 border-radius:50%;background:#ff6b35;cursor:pointer;}
 #ytPlayerContainer{position:fixed;left:-220px;bottom:0;width:200px;height:200px;pointer-events:none;}
+
+/* Title screen */
+#titleScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 55%,rgba(80,10,10,0.98) 0%,rgba(5,0,0,1) 70%);z-index:101;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;cursor:pointer;}
+#titleScreen canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
+#titleTapHint{font-family:‘Arial Black’,Arial,sans-serif;font-size:11px;letter-spacing:4px;color:rgba(255,180,0,0.7);margin-top:44px;animation:blink 1.4s ease-in-out infinite;position:relative;z-index:1;}
+@keyframes blink{0%,100%{opacity:0.3;}50%{opacity:1;}}
+
+/* Audio perm modal */
+#audioPermModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;}
+#audioPermCard{background:rgba(10,5,20,0.99);border:2px solid rgba(255,107,53,0.5);border-radius:16px;padding:28px 26px;max-width:340px;width:100%;text-align:center;}
+#audioPermCard h2{font-size:13px;letter-spacing:4px;color:#ff6b35;margin-bottom:12px;font-family:‘Arial Black’,Arial,sans-serif;}
+#audioPermCard p{font-size:10px;color:rgba(200,180,160,0.75);line-height:1.8;margin-bottom:8px;}
+#audioPermCard .hint{font-size:9px;color:rgba(255,107,53,0.4);margin-bottom:22px;letter-spacing:1px;}
+.permBtns{display:flex;flex-direction:column;gap:10px;}
+#enableAudioBtn{background:rgba(255,107,53,0.15);border:2px solid rgba(255,107,53,0.8);border-radius:8px;color:#ff6b35;font-family:‘Arial Black’,Arial,sans-serif;font-size:12px;letter-spacing:2px;padding:14px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+#enableAudioBtn:active{background:rgba(255,107,53,0.3);}
+#skipAudioBtn{background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:rgba(255,255,255,0.3);font-family:‘Arial Black’,Arial,sans-serif;font-size:9px;letter-spacing:2px;padding:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 </style>
 
 </head>
@@ -90,7 +107,7 @@ border-radius:50%;background:#ff6b35;cursor:pointer;}
     <h2>SETTINGS</h2>
     <div class="cogSection">
       <label>MUSIC — PASTE YOUTUBE LINK OR PLAYLIST</label>
-      <input id="ytInput" type="text" placeholder="https://youtube.com/watch?v=..." value="https://youtu.be/XMcbjp4Sq4M?si=XGPgt48EOnUw4-p-">
+      <input id="ytInput" type="text" placeholder="https://youtube.com/watch?v=..." value="https://youtu.be/XMcbjp4Sq4M?si=Etu5czBtYOXRGmtz">
       <div class="cogRow">
         <button class="cogMusicBtn" id="ytPlay">PLAY</button>
         <button class="cogMusicBtn" id="ytStop">STOP</button>
@@ -105,6 +122,27 @@ border-radius:50%;background:#ff6b35;cursor:pointer;}
 <!-- Hidden YouTube player -->
 
 <div id="ytPlayerContainer"></div>
+
+<!-- Title screen -->
+
+<div id="titleScreen">
+  <canvas id="titleCanvas"></canvas>
+  <div id="titleTapHint">TAP TO BEGIN</div>
+</div>
+
+<!-- Audio permission modal -->
+
+<div id="audioPermModal" style="display:none;">
+  <div id="audioPermCard">
+    <h2>☠ ZOMBIE HORDE</h2>
+    <p>Enable audio for music and sound effects.</p>
+    <p class="hint">Toggle music anytime via ⚙ menu</p>
+    <div class="permBtns">
+      <button id="enableAudioBtn">ENABLE AUDIO &amp; PLAY</button>
+      <button id="skipAudioBtn">Play without sound</button>
+    </div>
+  </div>
+</div>
 
 <div id="overlay">
   <div id="startScreen">
@@ -146,7 +184,7 @@ var ytPlayer = null;
 var ytPendingPlay = false;
 var musicVolume = 0.60;
 var sfxVolume = 0.60;
-var DEFAULT_YT = ‘https://youtu.be/XMcbjp4Sq4M?si=XGPgt48EOnUw4-p-’;
+var DEFAULT_YT = ‘https://youtu.be/XMcbjp4Sq4M?si=Etu5czBtYOXRGmtz’;
 
 function ytExtract(url){
 try{
@@ -158,59 +196,129 @@ if(v) return {type:‘video’,id:v[1]};
 return null;
 }
 
-function ytPlayUrl(url){
-if(!ytPlayer||!ytPlayer.unMute) return;
-var info=ytExtract(url);
-if(!info){document.getElementById(‘musicStatus’).textContent=‘Invalid URL’;return;}
+// ── COG MENU ──────────────────────────────────────────────────────────
+document.getElementById(‘cogBtn’).addEventListener(‘click’, function(){document.getElementById(‘cogMenuOverlay’).classList.add(‘show’);});
+document.getElementById(‘closeCog’).addEventListener(‘click’, function(){document.getElementById(‘cogMenuOverlay’).classList.remove(‘show’);});
+document.getElementById(‘cogMenuOverlay’).addEventListener(‘click’, function(e){if(e.target===this)this.classList.remove(‘show’);});
+
+document.getElementById(‘ytPlay’).addEventListener(‘click’, function(){
+var url=document.getElementById(‘ytInput’).value.trim()||DEFAULT_YT;
+if(ytPlayer&&ytPlayer.unMute){
+var info=ytExtract(url);if(!info){document.getElementById(‘musicStatus’).textContent=‘Invalid URL’;return;}
 if(info.type===‘playlist’){ytPlayer.loadPlaylist({list:info.id,listType:‘playlist’,index:0,shuffle:1});}
 else{ytPlayer.loadVideoById(info.id);}
-ytPlayer.unMute();
-ytPlayer.setVolume(Math.round(musicVolume*100));
-ytPlayer.playVideo();
+ytPlayer.unMute();ytPlayer.setVolume(Math.round(musicVolume*100));ytPlayer.playVideo();
 document.getElementById(‘musicStatus’).textContent=‘Playing’;
-}
-
-function wireMusicButtons(){
-var cogBtn=document.getElementById(‘cogBtn’);
-var closeCog=document.getElementById(‘closeCog’);
-var overlay=document.getElementById(‘cogMenuOverlay’);
-var ytPlay=document.getElementById(‘ytPlay’);
-var ytStop=document.getElementById(‘ytStop’);
-var musicVol=document.getElementById(‘musicVol’);
-var sfxVolEl=document.getElementById(‘sfxVol’);
-
-function openCog(e){e.stopPropagation();overlay.classList.add(‘show’);}
-function closeCogFn(){overlay.classList.remove(‘show’);}
-
-cogBtn.addEventListener(‘click’, openCog);
-cogBtn.addEventListener(‘touchend’, function(e){e.preventDefault();e.stopPropagation();openCog(e);});
-closeCog.addEventListener(‘click’, closeCogFn);
-closeCog.addEventListener(‘touchend’, function(e){e.preventDefault();closeCogFn();});
-overlay.addEventListener(‘click’, function(e){if(e.target===this)closeCogFn();});
-
-ytPlay.addEventListener(‘click’, function(){
-var url=document.getElementById(‘ytInput’).value.trim()||DEFAULT_YT;
-if(!url){document.getElementById(‘musicStatus’).textContent=‘Paste a YouTube link above’;return;}
-if(ytPlayer&&ytPlayer.unMute){ytPlayUrl(url);}
-else{ytPendingPlay=true;}
+} else { ytPendingPlay=true; }
 });
-ytPlay.addEventListener(‘touchend’, function(e){e.preventDefault();ytPlay.click();});
-
-ytStop.addEventListener(‘click’, function(){
+document.getElementById(‘ytStop’).addEventListener(‘click’, function(){
 if(ytPlayer&&ytPlayer.pauseVideo){ytPlayer.pauseVideo();ytPlayer.mute();}
 document.getElementById(‘musicStatus’).textContent=‘Stopped’;
 });
-ytStop.addEventListener(‘touchend’, function(e){e.preventDefault();ytStop.click();});
+document.getElementById(‘musicVol’).addEventListener(‘input’, function(){musicVolume=this.value/100;if(ytPlayer&&ytPlayer.setVolume)ytPlayer.setVolume(Math.round(musicVolume*100));});
+document.getElementById(‘sfxVol’).addEventListener(‘input’, function(){sfxVolume=this.value/100;});
 
-musicVol.addEventListener(‘input’, function(){
-musicVolume=this.value/100;
-if(ytPlayer&&ytPlayer.setVolume) ytPlayer.setVolume(Math.round(musicVolume*100));
+// ── TITLE SCREEN ──────────────────────────────────────────────────────
+(function(){
+var ts=document.getElementById(‘titleScreen’);
+var tc=document.getElementById(‘titleCanvas’);
+var tx=tc.getContext(‘2d’);
+var stars=[];
+var shine=0;
+var raf;
+
+function resizeTC(){tc.width=window.innerWidth;tc.height=window.innerHeight;}
+resizeTC();
+window.addEventListener(‘resize’,resizeTC);
+
+for(var i=0;i<220;i++) stars.push({
+x:Math.random(),y:Math.random(),
+r:Math.random()*1.5+0.3,
+a:Math.random()*0.5+0.4,
+tw:Math.random()*Math.PI*2,
+ts:Math.random()*0.003+0.0005
 });
-sfxVolEl.addEventListener(‘input’, function(){sfxVolume=this.value/100;});
-}
 
-if(document.readyState===‘loading’) document.addEventListener(‘DOMContentLoaded’, wireMusicButtons);
-else wireMusicButtons();
+function drawTitle(){
+var w=tc.width,h=tc.height;
+tx.clearRect(0,0,w,h);
+// Stars
+for(var i=0;i<stars.length;i++){
+var s=stars[i];s.tw+=s.ts;
+tx.beginPath();tx.arc(s.x*w,s.y*h,s.r,0,Math.PI*2);
+tx.fillStyle=‘rgba(255,255,255,’+(s.a*(0.6+0.4*Math.sin(s.tw)))+’)’;tx.fill();
+}
+// Glow backdrop
+var pg=tx.createRadialGradient(w*0.5,h*0.55,0,w*0.5,h*0.55,w*0.4);
+pg.addColorStop(0,‘rgba(140,20,0,0.35)’);
+pg.addColorStop(0.5,‘rgba(80,10,0,0.15)’);
+pg.addColorStop(1,‘rgba(0,0,0,0)’);
+tx.fillStyle=pg;tx.fillRect(0,0,w,h);
+// Title text
+tx.save();
+tx.translate(w/2,h*0.38);
+tx.rotate(-0.045);
+var fs=Math.min(w*0.13,h*0.10,62);
+var lineGap=fs*1.15;
+var lines=[‘ZOMBIE’,‘HORDE’];
+tx.textAlign=‘center’;tx.textBaseline=‘middle’;
+for(var li=0;li<lines.length;li++){
+var ly=(li-(lines.length-1)/2)*lineGap;
+tx.font=’900 ’+fs+‘px Arial Black,Arial,sans-serif’;
+tx.shadowColor=‘rgba(255,60,0,0.9)’;tx.shadowBlur=44;
+tx.fillStyle=‘rgba(200,40,0,0.2)’;tx.fillText(lines[li],2,ly+2);
+tx.shadowColor=‘rgba(255,200,0,0.6)’;tx.shadowBlur=28;
+var grd=tx.createLinearGradient(-w*0.3,-fs*0.5,w*0.3,fs*0.5);
+grd.addColorStop(0,’#ff2200’);grd.addColorStop(0.4,’#ffaa00’);
+grd.addColorStop(0.7,’#ff4400’);grd.addColorStop(1,’#ff2200’);
+tx.fillStyle=grd;tx.fillText(lines[li],0,ly);
+shine=(shine+0.002)%1;
+var sw=w*0.45;
+var sg=tx.createLinearGradient(-sw+shine*sw*2.5,ly-fs,-sw+shine*sw*2.5+sw*0.4,ly+fs);
+sg.addColorStop(0,‘rgba(255,255,255,0)’);sg.addColorStop(0.5,‘rgba(255,255,255,0.45)’);sg.addColorStop(1,‘rgba(255,255,255,0)’);
+tx.fillStyle=sg;tx.shadowBlur=0;tx.fillText(lines[li],0,ly);
+}
+tx.restore();
+// Subtitle
+var subY=h*0.38+lineGap*1.35;
+var subFs=Math.min(w*0.028,13);
+tx.save();
+tx.font=’bold ’+subFs+‘px Arial Black,Arial,sans-serif’;
+tx.textAlign=‘center’;tx.fillStyle=‘rgba(255,160,80,0.75)’;
+tx.shadowColor=‘rgba(255,80,0,0.5)’;tx.shadowBlur=10;
+tx.fillText(‘SURVIVE THE HORDE.’,w/2,subY);
+tx.fillText(‘KILL THE KING.’,w/2,subY+subFs*1.9);
+tx.restore();
+raf=requestAnimationFrame(drawTitle);
+}
+drawTitle();
+
+function proceed(){
+cancelAnimationFrame(raf);
+ts.style.transition=‘opacity 0.5s’;
+ts.style.opacity=‘0’;
+setTimeout(function(){
+ts.style.display=‘none’;
+document.getElementById(‘audioPermModal’).style.display=‘flex’;
+},500);
+}
+ts.addEventListener(‘click’,proceed);
+ts.addEventListener(‘touchend’,function(e){e.preventDefault();proceed();},{passive:false});
+})();
+
+// ── AUDIO PERMISSION MODAL ────────────────────────────────────────────
+document.getElementById(‘enableAudioBtn’).addEventListener(‘click’,function(){
+if(ytPlayer&&ytPlayer.unMute){
+ytPlayer.unMute();ytPlayer.setVolume(Math.round(musicVolume*100));ytPlayer.playVideo();
+document.getElementById(‘musicStatus’).textContent=‘Playing’;
+} else { ytPendingPlay=true; }
+document.getElementById(‘audioPermModal’).style.display=‘none’;
+startGame();
+});
+document.getElementById(‘skipAudioBtn’).addEventListener(‘click’,function(){
+document.getElementById(‘audioPermModal’).style.display=‘none’;
+startGame();
+});
 
 const canvas = document.getElementById(‘gameCanvas’);
 const ctx = canvas.getContext(‘2d’);
@@ -1277,34 +1385,36 @@ document.getElementById(‘finalStats’).innerHTML=` <div class="stat-line">Rou
 <!-- YouTube IFrame API callback — must be global -->
 
 <script>
+var ytReady=false;
+
 function onYouTubeIframeAPIReady(){
-  var url = document.getElementById('ytInput').value.trim() || DEFAULT_YT;
-  var info = url ? ytExtract(url) : null;
-  var pvars = {autoplay:1, playsinline:1, controls:0, mute:0, origin:window.location.origin};
-  var vidId = undefined;
-  if(info && info.type==='playlist'){
-    pvars.listType='playlist'; pvars.list=info.id; pvars.shuffle=1;
-  } else if(info && info.type==='video'){
-    vidId = info.id; pvars.loop=1; pvars.playlist=info.id;
-  }
-  var cfg = {
-    height:'200', width:'200',
-    playerVars: pvars,
+  ytReady=true;
+  var url=document.getElementById('ytInput').value.trim()||DEFAULT_YT;
+  var info=ytExtract(url);
+  if(!info) return;
+  var pvars={autoplay:1,playsinline:1,controls:0,mute:1,origin:window.location.origin};
+  var vidId=undefined;
+  if(info.type==='playlist'){pvars.listType='playlist';pvars.list=info.id;pvars.shuffle=1;}
+  else{vidId=info.id;pvars.loop=1;pvars.playlist=info.id;}
+  var cfg={
+    height:'200',width:'200',
+    playerVars:pvars,
     events:{
-      onReady: function(e){
+      onReady:function(e){
         e.target.setVolume(Math.round(musicVolume*100));
-        e.target.unMute();
-        e.target.playVideo();
-        ytPendingPlay=false;
-        document.getElementById('musicStatus').textContent='Playing';
+        if(ytPendingPlay){
+          e.target.unMute();e.target.playVideo();
+          ytPendingPlay=false;
+          document.getElementById('musicStatus').textContent='Playing';
+        }
       },
-      onStateChange: function(e){
+      onStateChange:function(e){
         if(e.data===YT.PlayerState.ENDED||e.data===YT.PlayerState.UNSTARTED) e.target.playVideo();
       }
     }
   };
-  if(vidId) cfg.videoId = vidId;
-  ytPlayer = new YT.Player('ytPlayerContainer', cfg);
+  if(vidId) cfg.videoId=vidId;
+  ytPlayer=new YT.Player('ytPlayerContainer',cfg);
 }
 </script>
 

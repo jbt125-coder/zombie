@@ -76,10 +76,11 @@ border-radius:50%;background:#ff6b35;cursor:pointer;}
 #ytPlayerContainer{position:fixed;left:-220px;bottom:0;width:200px;height:200px;pointer-events:none;}
 
 /* Title screen */
-#titleScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 55%,rgba(80,10,10,0.98) 0%,rgba(5,0,0,1) 70%);z-index:101;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;cursor:pointer;}
-#titleScreen canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
-#titleTapHint{font-family:‘Arial Black’,Arial,sans-serif;font-size:11px;letter-spacing:4px;color:rgba(255,180,0,0.7);margin-top:25vh;animation:blink 1.4s ease-in-out infinite;position:relative;z-index:1;}
-@keyframes blink{0%,100%{opacity:0.3;}50%{opacity:1;}}
+#titleScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 45%,#3a0000 0%,#1a0000 40%,#000 100%);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+#titleLogo{font-family:‘Arial Black’,Arial,sans-serif;font-size:clamp(42px,12vw,80px);font-weight:900;text-align:center;line-height:1.05;background:linear-gradient(135deg,#ff2200,#ffaa00,#ff4400);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px rgba(255,80,0,0.8));letter-spacing:2px;}
+#titleSub{font-family:‘Arial Black’,Arial,sans-serif;font-size:clamp(9px,2.5vw,13px);color:rgba(255,160,80,0.7);letter-spacing:3px;margin-top:14px;text-align:center;}
+#titleTapHint{font-family:‘Arial Black’,Arial,sans-serif;font-size:clamp(10px,3vw,13px);letter-spacing:4px;color:rgba(255,200,0,0.85);margin-top:25vh;animation:blink 1.4s ease-in-out infinite;text-align:center;}
+@keyframes blink{0%,100%{opacity:0.25;}50%{opacity:1;}}
 
 /* Audio perm modal */
 #audioPermModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;}
@@ -126,7 +127,8 @@ border-radius:50%;background:#ff6b35;cursor:pointer;}
 <!-- Title screen -->
 
 <div id="titleScreen">
-  <canvas id="titleCanvas"></canvas>
+  <div id="titleLogo">ZOMBIE<br>HORDE</div>
+  <div id="titleSub">SURVIVE THE HORDE. KILL THE KING.</div>
   <div id="titleTapHint">TAP TO BEGIN</div>
 </div>
 
@@ -220,92 +222,18 @@ document.getElementById(‘sfxVol’).addEventListener(‘input’, function(){s
 
 // ── TITLE SCREEN ──────────────────────────────────────────────────────
 (function(){
-var ts=document.getElementById(‘titleScreen’);
-var tc=document.getElementById(‘titleCanvas’);
-var tx=tc.getContext(‘2d’);
-var stars=[];
-var shine=0;
-var raf;
-
-function resizeTC(){tc.width=window.innerWidth||screen.width;tc.height=window.innerHeight||screen.height;}
-resizeTC();
-window.addEventListener(‘resize’,resizeTC);
-// Also resize on first rAF in case layout isn’t ready yet
-requestAnimationFrame(function(){ resizeTC(); });
-
-for(var i=0;i<220;i++) stars.push({
-x:Math.random(),y:Math.random(),
-r:Math.random()*1.5+0.3,
-a:Math.random()*0.5+0.4,
-tw:Math.random()*Math.PI*2,
-ts:Math.random()*0.003+0.0005
-});
-
-function drawTitle(){
-var w=tc.width,h=tc.height;
-tx.clearRect(0,0,w,h);
-// Stars
-for(var i=0;i<stars.length;i++){
-var s=stars[i];s.tw+=s.ts;
-tx.beginPath();tx.arc(s.x*w,s.y*h,s.r,0,Math.PI*2);
-tx.fillStyle=‘rgba(255,255,255,’+(s.a*(0.6+0.4*Math.sin(s.tw)))+’)’;tx.fill();
-}
-// Glow backdrop
-var pg=tx.createRadialGradient(w*0.5,h*0.55,0,w*0.5,h*0.55,w*0.4);
-pg.addColorStop(0,‘rgba(140,20,0,0.35)’);
-pg.addColorStop(0.5,‘rgba(80,10,0,0.15)’);
-pg.addColorStop(1,‘rgba(0,0,0,0)’);
-tx.fillStyle=pg;tx.fillRect(0,0,w,h);
-// Title text
-tx.save();
-tx.translate(w/2,h*0.38);
-tx.rotate(-0.045);
-var fs=Math.min(w*0.13,h*0.10,62);
-var lineGap=fs*1.15;
-var lines=[‘ZOMBIE’,‘HORDE’];
-tx.textAlign=‘center’;tx.textBaseline=‘middle’;
-for(var li=0;li<lines.length;li++){
-var ly=(li-(lines.length-1)/2)*lineGap;
-tx.font=’900 ’+fs+‘px Arial Black,Arial,sans-serif’;
-tx.shadowColor=‘rgba(255,60,0,0.9)’;tx.shadowBlur=44;
-tx.fillStyle=‘rgba(200,40,0,0.2)’;tx.fillText(lines[li],2,ly+2);
-tx.shadowColor=‘rgba(255,200,0,0.6)’;tx.shadowBlur=28;
-var grd=tx.createLinearGradient(-w*0.3,-fs*0.5,w*0.3,fs*0.5);
-grd.addColorStop(0,’#ff2200’);grd.addColorStop(0.4,’#ffaa00’);
-grd.addColorStop(0.7,’#ff4400’);grd.addColorStop(1,’#ff2200’);
-tx.fillStyle=grd;tx.fillText(lines[li],0,ly);
-shine=(shine+0.002)%1;
-var sw=w*0.45;
-var sg=tx.createLinearGradient(-sw+shine*sw*2.5,ly-fs,-sw+shine*sw*2.5+sw*0.4,ly+fs);
-sg.addColorStop(0,‘rgba(255,255,255,0)’);sg.addColorStop(0.5,‘rgba(255,255,255,0.45)’);sg.addColorStop(1,‘rgba(255,255,255,0)’);
-tx.fillStyle=sg;tx.shadowBlur=0;tx.fillText(lines[li],0,ly);
-}
-tx.restore();
-// Subtitle
-var subY=h*0.38+lineGap*1.35;
-var subFs=Math.min(w*0.028,13);
-tx.save();
-tx.font=’bold ’+subFs+‘px Arial Black,Arial,sans-serif’;
-tx.textAlign=‘center’;tx.fillStyle=‘rgba(255,160,80,0.75)’;
-tx.shadowColor=‘rgba(255,80,0,0.5)’;tx.shadowBlur=10;
-tx.fillText(‘SURVIVE THE HORDE.’,w/2,subY);
-tx.fillText(‘KILL THE KING.’,w/2,subY+subFs*1.9);
-tx.restore();
-raf=requestAnimationFrame(drawTitle);
-}
-drawTitle();
-
+var ts = document.getElementById(‘titleScreen’);
 function proceed(){
-cancelAnimationFrame(raf);
-ts.style.transition=‘opacity 0.5s’;
-ts.style.opacity=‘0’;
+ts.style.transition = ‘opacity 0.4s’;
+ts.style.opacity = ‘0’;
+ts.style.pointerEvents = ‘none’;
 setTimeout(function(){
-ts.style.display=‘none’;
-document.getElementById(‘audioPermModal’).style.display=‘flex’;
-},500);
+ts.style.display = ‘none’;
+document.getElementById(‘audioPermModal’).style.display = ‘flex’;
+}, 420);
 }
-ts.addEventListener(‘click’,proceed);
-ts.addEventListener(‘touchend’,function(e){e.preventDefault();proceed();},{passive:false});
+ts.addEventListener(‘click’, proceed);
+ts.addEventListener(‘touchend’, function(e){ e.preventDefault(); proceed(); }, {passive:false});
 })();
 
 // ── AUDIO PERMISSION MODAL ────────────────────────────────────────────
